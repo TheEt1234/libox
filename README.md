@@ -14,8 +14,8 @@ Everything in libox is avaliable in the async environment as well, hoewer it has
 ## Planned
 - "Coroutine" sandbox
     - a sandbox that can yield(), allowing it to restore its state the next execution
-    - runs every [n] globalsteps (is not run when unloaded)
-    - data is stored *outside* of the node, as it is impossible to serialize a coroutine
+    - runs every [n] globalsteps (is not run when the "parent node" is unloaded)
+    - data is stored *outside* of the node, as it is impossible to serialize a coroutine unless i did some native (aka C) shenanigans, that would require being a trusted mod though
     - the environment gets measured for size each time after it executes, if it exceeds that it halts 
     - low priority
 
