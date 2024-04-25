@@ -279,43 +279,49 @@ function libox.digiline_sanitize(input, allow_functions, wrap)
 			Also, errors may be forcefully corrected, to copy use table.copy
 	]]
 
-    local wrap = wrap --or libox.sandbox_wrap
-
-    local function internal(msg, back_references)
+    local wrap = wrap or function(f) return f end
+    local function clean_and_weigh_digiline_message(msg, back_references)
         local t = type(msg)
         if t == "string" then
-            return true, #msg + 25
+            -- Strings are immutable so can be passed by reference, and cost their
+            -- length plus the size of the Lua object header (24 bytes on a 64-bit
+            -- platform) plus one byte for the NUL terminator.
+            return msg, #msg + 25
         elseif t == "number" then
+            -- Numbers are passed by value so need not be touched, and cost 8 bytes
+            -- as all numbers in Lua are doubles. NaN values are removed.
             if msg ~= msg then
-                return false, 0
+                return nil, 0
             end
-            return true, 8
+            return msg, 8
         elseif t == "boolean" then
-            return true, 1
+            -- Booleans are passed by value so need not be touched, and cost 1
+            -- byte.
+            return msg, 1
         elseif t == "table" then
+            -- Tables are duplicated. Check if this table has been seen before
+            -- (self-referential or shared table); if so, reuse the cleaned value
+            -- of the previous occurrence, maintaining table topology and avoiding
+            -- infinite recursion, and charge zero bytes for this as the object has
+            -- already been counted.
             back_references = back_references or {}
             local bref = back_references[msg]
             if bref then
-                return true, 0
+                return bref, 0
             end
             -- Construct a new table by cleaning all the keys and values and adding
             -- up their costs, plus 8 bytes as a rough estimate of table overhead.
             local cost = 8
-            back_references[msg] = true
+            local ret = {}
+            back_references[msg] = ret
             for k, v in pairs(msg) do
                 local k_cost, v_cost
-                allowed_k, k_cost = internal(k, back_references)
-                allowed_v, v_cost = internal(v, back_references)
-                if allowed_k == false or allowed_v == false then
-                    msg[k] = nil -- forcefully correct the error
-                end
-
-                if type(allowed_v) ~= "boolean" and allowed_v ~= nil then
-                    msg[k] = allowed_v
-                elseif type(allowed_k) ~= "boolean" and allowed_k ~= nil then
-                    -- this one is... tricky
-                    -- and honestly who the hell does that, kill the key
-                    msg[k] = nil
+                k, k_cost = clean_and_weigh_digiline_message(k, back_references)
+                v, v_cost = clean_and_weigh_digiline_message(v, back_references)
+                if k ~= nil and v ~= nil then
+                    -- Only include an element if its key and value are of legal
+                    -- types.
+                    ret[k] = v
                 end
                 -- If we only counted the cost of a table element when we actually
                 -- used it, we would be vulnerable to the following attack:
@@ -332,40 +338,27 @@ function libox.digiline_sanitize(input, allow_functions, wrap)
                 -- anyway because they contain illegal object types.
                 cost = cost + k_cost + v_cost
             end
-            return true, cost
-        elseif t == "function" and allow_functions == true then
+            return ret, cost
+        elseif t == "function" and allow_functions then
             local success, bytecode = pcall(function()
                 return string.dump(msg)
             end)
-            local cost = #bytecode + 25
-            if not success then return false, 0 end -- that function cannot be serialized or cannot be transmitted between environments
-
-            setfenv(msg, {})
-            -- any/all environment functions will have to be passed by arguments, sorry
-            if wrap ~= nil then
-                -- we have a problem here...
-                -- we cannot really modify the message.... besides just saying "is it allowed" or not
-                -- to solve this, i uhh did this
-                if msg == input then
-                    input = wrap(msg) -- change the t to be the wrapping
-                    return true, cost
-                else
-                    local wrapping = wrap(msg)
-                    return wrapping, cost -- introduce special case
-                end
+            if not success then
+                return nil, 0
+            else
+                return wrap(msg), #bytecode + 25
             end
-
-            return true, cost
         else
-            return false, 0
+            return nil, 0
         end
     end
 
-    local allowed, cost = internal(input)
-    if not allowed then
+
+    local msg, cost = clean_and_weigh_digiline_message(input)
+    if not msg then
         return nil, 0
     else
-        return input, cost
+        return msg, cost
     end
 end
 
