@@ -11,6 +11,8 @@ function libox.normal_sandbox(def)
     if not allow_bytecode and code:byte(1) == BYTECODE_CHAR then -- only allow non-arbitrary bytecode, like result of string.dump
         return false, "Bytecode was not allowed."
         -- bytecode can write to ARBITRARY memory locations i think, or something, idk
+        -- ok so update: minetest, when using mod security does not allow bytecode
+        -- (this also means the serialization/deserialization of functions)
     end
 
     local f, msg = loadstring(code)
