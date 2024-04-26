@@ -105,4 +105,6 @@ function api.create_sandbox(def)
         hook_function = def.hook_function or api.get_default_hook(def.time_limit),
 
     }
+
+    return ID
 end

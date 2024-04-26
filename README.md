@@ -1,4 +1,5 @@
 # Libox
+# DO NOT CONSIDER THIS PROJECT SECURE CURRENTLY
 
 A minetest lua sandboxing library
 
@@ -18,6 +19,10 @@ Everything in libox is avaliable in the async environment as well, hoewer it has
     - data is stored *outside* of the node, as it is impossible to serialize a coroutine unless i did some native (aka C) shenanigans, that would require being a trusted mod though
     - the environment gets measured for size each time after it executes, if it exceeds that it halts 
     - low priority
+- Tests
+    - when i feel like it, don't consider this project usable until i get tests working
+    (whenever it be manual or whatever)
+
 
 License:
     Code:

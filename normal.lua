@@ -8,11 +8,11 @@ function libox.normal_sandbox(def)
     local error_handler = def.error_handler or libox.traceback
     local in_hook = def.in_hook or libox.get_default_hook(def.max_time)
 
-    if not allow_bytecode and code:byte(1) == BYTECODE_CHAR then -- only allow non-arbitrary bytecode, like result of string.dump
+    if not allow_bytecode and code:byte(1) == BYTECODE_CHAR then
         return false, "Bytecode was not allowed."
         -- bytecode can write to ARBITRARY memory locations i think, or something, idk
         -- ok so update: minetest, when using mod security does not allow bytecode
-        -- (this also means the serialization/deserialization of functions)
+        -- (this also means the deserialization of functions)
     end
 
     local f, msg = loadstring(code)
