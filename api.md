@@ -44,7 +44,7 @@
 
 ## "Coroutine" sandbox
 - Optionally requires trusted environment for weighing local variables and upvalues
-    - without it someone can overfill your memory, but libox has protections against that somewhat
+    - without it someone can overfill your memory, but libox has protections against that *somewhat, though i don't think it's a good idea to rely on them*
 
 ### What is it?
 A sandbox that allows the user to **yield** => temporarily stop execution; then be able to resume from that point
@@ -52,7 +52,7 @@ A sandbox that allows the user to **yield** => temporarily stop execution; then 
 
 ### garbage collection
 `libox.coroutine.settings`
-- memory_treshold: in gigabytes, if lua's memory reaches above this limit, the hook will error, the user is meant to configure this to their needs
+- memory_treshold: in gigabytes, if lua's memory reaches above this limit, the hook will error, the user is meant to configure this to their needs *also this is what i meant about those overfill protections, not exactly reliable*
 - gc settings:
     - time_treshold: if a sandbox has been untouched for this long, collect it, in seconds
     - number_of_sandboxes: the garbage collection will trigger if the number of stored sandboxes is above this limit
@@ -101,7 +101,9 @@ All of theese are configurable by the user
 
 # Async
 - everything else other than the coroutine sandbox is avaliable in both sync and async environments
-- coroutine sandbox is not avaliable in async because 
+
+coroutine sandbox is not avaliable in async because 
+
 1) I cannot import the debug.getlocal and debug.getupvalue functions into the async environment
 2) I cannot import a coroutine in the async environment
 
