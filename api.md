@@ -3,7 +3,7 @@
 ## Disclaimers
 - Currently i cannot guarrantee safety of this library, tests are extremely insufficent
 - ***DO NOT EVER CALL FUNCTIONS FROM THE ENVIRONMENT (once the environment is defined) AND DO NOT CALL ANY FUNCTIONS RETURNED BY THE SANDBOX*** that will just bypass the debug hook and allow someone to `repeat until false` and *stop* the server that way
-- anything coming out of the sandbox should *not* be called, and be checked
+- anything coming out of the sandbox should *not* be called, and be checked for every single detail (like you are writing a digiline device)
 
 ## Definitions
 - microsecond: milisecond * 1000
@@ -31,10 +31,15 @@
 - A sandbox that executes lua code securely based on parameters in `def` (table)
 
 `def.code` - the code...
+
 `def.env` - The environment of the function
+
 `def.error_handler` - A function inside the `xpcall`, by default `libox.traceback`
+
 `def.in_hook` - The hook function, by default `libox.get_default_hook(def.max_time)`
+
 `def.max_time` - Maximum allowed execution time, in microseconds, only used if `def.in_hook` was not defined
+
 `def.hook_time` - The hook function will execute every `def.hook_time` instructions
 
 ## "Coroutine" sandbox
