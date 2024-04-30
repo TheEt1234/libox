@@ -457,12 +457,6 @@ end
 api.active_sandboxes = active_sandboxes
 libox.coroutine = api
 
---[[
-    TODOs:
-        Optimizing the getsize function
-
-]]
-
 local function start_timer()
     minetest.after(api.settings.gc.interval, function()
         api.garbage_collect()

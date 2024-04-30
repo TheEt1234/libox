@@ -217,7 +217,7 @@ it("Limits upvalues", function()
         (v.errmsg == "Out of memory!")
 end)
 
-it("Time to execute and weigh in an reasonable environment, in milis", function()
+it("Time to weigh _G (warn: unstable? theres a lot of crap in _G for sure)", function()
     local env = libox.create_basic_environment()
     libox.coroutine.get_size(env, {}, coroutine.create(function() end))
     -- JIT it up a little
@@ -228,7 +228,7 @@ it("Time to execute and weigh in an reasonable environment, in milis", function(
             coroutine.yield()
         ]],
         -- yeah
-        env = env,
+        env = _G,
         size_limit = 1000,
         time_limit = 1000000 -- 1 million microseconds, can you imagine that (that's definitely not 1 second)
 
@@ -237,8 +237,10 @@ it("Time to execute and weigh in an reasonable environment, in milis", function(
     local t1 = minetest.get_us_time()
     libox.coroutine.run_sandbox(sandbox)
     local sandboxd = libox.coroutine.active_sandboxes[sandbox]
-    return "time (both):" ..
-        (minetest.get_us_time() - t1) / 1000 ..
+    return "time:" ..
+        (minetest.get_us_time() - t1) / 1000 .. "ms" ..
         " size:" .. libox.coroutine.get_size(sandboxd.env, {}, sandboxd.thread)
-        .. " digiline sanitize thinks:" .. ({ libox.digiline_sanitize(env, true) })[2]
+        ..
+        " digiline sanitize thinks:" ..
+        ({ libox.digiline_sanitize(env, true) })[2] .. " lua gc thinks: " .. collectgarbage("count") * 1024
 end)
