@@ -201,76 +201,48 @@ function api.delete_sandbox(id)
     active_sandboxes[id] = nil
 end
 
---[[
-local function locals(thread)
-    local vars = {
-        upvals = {},
-        locals = {}
+local function locals(val, f_thread)
+    --[[
+        Arguments to this are sorta confusing but better what we had before
+        f_thread: optional thread if type(val) == "function"
+        val: the value you are trying to get locals of, can be function or thread, if thread then f_thread is ignored
+    ]]
+    local ret = {
+        _F = "", -- the function itself, weighed using string.dump
+        _L = {}, -- Locals
+        _U = {}  -- Upvalues
     }
-    local index = 1
-    local level = 1
 
-    local does_that_level_actually_exist = debug.getinfo(thread, level, "f")
+    local getinfo, getlocal, getupvalue = debug.getinfo, debug.getlocal, debug.getupvalue
 
-    if not does_that_level_actually_exist then
-        return {}
-    end
-
-    local f = does_that_level_actually_exist.func -- dont call this (duh)
-
-    while true do
-        local k, v = debug.getlocal(thread, level, index)
-        if k ~= nil then
-            vars.locals[k] = v
-        else
-            break
-        end
-        index = index + 1
-    end
-
-    local index = 0
-    while true do
-        local k, v = debug.getupvalue(f, index)
-        if k ~= nil then
-            vars.upvals[k] = v
-        else
-            break
-        end
-        index = index + 1
-    end
-
-    return vars
-end
---]]
-
-
--- env_or_nil is not supposed to be provided when type(thread) == "function"
-local function locals(thread, f, env_or_nil)
-    local thing = {
-        _G = env_or_nil,
-        _L = {},     -- Locals
-        _U = {}      -- Upvalues
-    }
-    if f == nil then -- thread and env_or_nil are real
-        local level_actually_exists = debug.getinfo(thread, 1, "u")
-        if level_actually_exists then
+    if type(val) == "thread" then
+        -- i don't think the thread can have any upvalues
+        -- as in like....
+        -- yeah....
+        -- lets take a look at a closure, function x() local n = {} return function() return n end end
+        -- that has n
+        -- but yeah yeah
+        -- fuck i got lost
+        -- lets just check them just in case
+        local level = getinfo(val, 1, "u")
+        if level ~= nil then
             local index = 1
             while true do
-                local k, v = debug.getlocal(thread, 1, index)
+                local k, v = getlocal(val, 1, index)
                 if k ~= nil then
-                    thing._L[k] = v
+                    ret._L[k] = v
                 else
                     break
                 end
                 index = index + 1
             end
-            if level_actually_exists.nups > 0 then
+            if level.nups > 0 then
                 local index = 1
-                local f = debug.getinfo(thread, 1, "f").func
+                local f = getinfo(val, 1, "f").func
                 while true do
-                    local k, v = debug.getupvalue(f, index)
+                    local k, v = getupvalue(f, index)
                     if k ~= nil then
-                        thing._U[k] = v
+                        ret._U[k] = v
                     else
                         break
                     end
@@ -278,23 +250,18 @@ local function locals(thread, f, env_or_nil)
                 end
             end
         end
-    elseif f ~= nil then -- our main focus is f now
-        --[[
-            Too lazy to not repeat myself
-            So in this scenario "thread" is the function, "thing" is nothing...
-            We wont bother with the function environment, too silly of an idea, afterall it can only be stored from outside, or stored publically/privately on inside somewhere
-        ]]
-        -- for less confusion
-        local func_info = debug.getinfo(thread, f, "Su")
-        if not func_info or func_info.what == "C" then return 25 end -- whatever
-
-        local f_size = string.dump(f)
-        thing.env_or_nil = f_size
+    elseif type(val) == "function" then
+        local func_info = getinfo(f_thread, val, "Su")
+        if not func_info or func_info.what == "C" then
+            return {}
+        end -- whatever
+        local f_size = string.dump(val)
+        ret._F = f_size
         local index = 1
         while true do
-            local k, v = debug.getlocal(f, index)
+            local k, v = getlocal(val, index)
             if k ~= nil then
-                thing._L[k] = v
+                ret._L[k] = v
             else
                 break
             end
@@ -303,9 +270,9 @@ local function locals(thread, f, env_or_nil)
         if func_info.nups > 0 then
             local index = 1
             while true do
-                local k, v = debug.getupvalue(f, index)
+                local k, v = getupvalue(val, index)
                 if k ~= nil then
-                    thing._U[k] = v
+                    ret._U[k] = v
                 else
                     break
                 end
@@ -313,56 +280,66 @@ local function locals(thread, f, env_or_nil)
             end
         end
     end
-    return thing
+    return ret
 end
 
 
-
-function api.get_size(thread, thing, is_function) -- Get the size of a thread using it's environment
-    if debug.getlocal and debug.getupvalue and type(thread) == "thread" and not is_function then
-        thing = locals(thread, nil, thing)
-    elseif debug.getlocal and debug.getupvalue and type(thread) == "thread" and is_function then
-        thing = locals(thread, thing, nil)
+local function get_size(env, seen, thread, recursed)
+    local deferred_weigh_locals = {}
+    if not recursed then
+        deferred_weigh_locals[#deferred_weigh_locals + 1] = thread
     end
-    local function internal(thing, seen)
-        local t = type(thing)
+
+    local function internal(x, seen)
+        local t = type(x)
         if t == "string" then
-            return #thing + 25
+            return #x + 25
         elseif t == "number" then
             return 8
         elseif t == "boolean" then
             return 1
-        elseif t == "table" then
-            seen = seen or {}
-            local bref = seen[thing]
-            if bref then
-                return 0
-            end
+        elseif t == "table" and not seen[x] then
             local cost = 8
-            seen[thing] = true
-            for k, v in pairs(thing) do
+            seen[x] = true
+            for k, v in pairs(x) do
                 local k_cost = internal(k, seen)
                 local v_cost = internal(v, seen)
                 cost = cost + k_cost + v_cost
             end
             return cost
-        elseif t == "function" then
-            -- oh the fun
-            return api.get_size(thread, thing, true)
-        elseif t == "thread" then
-            return api.get_size(thing, nil, false) -- we dont know the environment, who cares anyway
+        elseif t == "function" and not seen[x] then
+            -- oh the fun!
+            seen[x] = true
+            deferred_weigh_locals[#deferred_weigh_locals + 1] = x
+            return 0 -- deffered
+        elseif t == "thread" and not seen[x] then
+            seen[x] = true
+            deferred_weigh_locals[#deferred_weigh_locals + 1] = x
+            return 0 -- deffered
         else
             return 0
         end
     end
 
-    return internal(thing, {
-        [thread] = true,
-    })
+    local retv = internal(env, seen)
+    if debug.getlocal ~= nil and debug.getupvalue ~= nil then
+        for i = 1, #deferred_weigh_locals do
+            local v = deferred_weigh_locals[i]
+            local their_locals = locals(v, thread)
+
+            local size = get_size(their_locals, seen, thread, true)
+            retv = retv + size
+        end
+    end
+
+    return retv
 end
 
+api.get_size = get_size
+
 function api.size_check(env, lim, thread)
-    local size = api.get_size(thread, env)
+    if thread == nil then error("Thread is nil! you can't check the size!") end
+    local size = api.get_size(env, {}, thread)
     if size > lim then
         return {
             is_err = true,
@@ -482,10 +459,7 @@ libox.coroutine = api
 
 --[[
     TODOs:
-        - Auto GC
-        - Tests
-        - An actual mod using this
-        - Actual getsize function, not just clean_and_weigh
+        Optimizing the getsize function
 
 ]]
 

@@ -6,6 +6,8 @@
     async in general is just... super tricky, more and more it feels like just a complicated way to call functions lmao
 
     Also libox coroutines ware TTD'ed somewhat (test driven developed)
+
+    ~~Maybe i should discover what this mtt thing is~~
 ]]
 libox.coroutine.test = {}
 libox.coroutine.test.tests = {} -- its hard to name things okay
@@ -14,26 +16,28 @@ local function it(name, func)
     libox.coroutine.test.tests[#libox.coroutine.test.tests + 1] = { f = func, n = name }
 end
 
+local function run_test_internal(v)
+    local result = v.f()
+
+    if type(result) ~= "boolean" and result ~= nil then
+        minetest.log(v.n .. " : " .. result)
+    elseif result == true then
+        minetest.log(v.n .. " : Success")
+    else
+        minetest.log(v.n .. " : Failure")
+    end
+end
+
 function libox.coroutine.test.run_tests()
     for _, v in pairs(libox.coroutine.test.tests) do
-        local result = v.f()
-        if result == true then
-            minetest.log(v.n .. " : Success")
-        else
-            minetest.log(v.n .. " : Failure")
-        end
+        run_test_internal(v)
     end
 end
 
 function libox.coroutine.test.run_test(test)
     for _, v in pairs(libox.coroutine.test.tests) do
         if v.n == test then
-            local result = v.f()
-            if result == true then
-                minetest.log(v.n .. " : Success")
-            else
-                minetest.log(v.n .. " : Failure")
-            end
+            run_test_internal(v)
             break
         end
     end
@@ -99,6 +103,29 @@ it("Limits environment size", function()
         (v.errmsg == "Out of memory!")
 end)
 
+it("Limits circular references", function()
+    local env = {}
+    env._G = env
+    env.f = function()
+        --local a = env._G
+        return env._G
+    end
+    local sandbox = libox.coroutine.create_sandbox({
+        code = [[
+            local e = _G -- Hehe i am an unsuspecting user and i am sure this won't be a mistake
+            coroutine.yield()
+        ]],
+        -- When having _G as the environment, it simply stack overflows? this is like... bad... yeah
+        env = env,
+        size_limit = 1000,
+        time_limit = 1000000 -- 1 million microseconds, can you imagine that (that's definitely not 1 second)
+
+    })
+
+    libox.coroutine.run_sandbox(sandbox)
+    return true -- if it doesnt stack overflow it does thing propertly
+end)
+
 it("Limits local variables", function()
     --[[
         IMPORTANT: This fails when there is no access to debug.getlocal
@@ -159,15 +186,8 @@ end)
 
 it("Limits upvalues", function()
     --[[
-        Probably needs debug.getlocal as well?
-        or needs debug.getupvalue
-
-        Honestly i hope it doesnt need upvalues
-
-        NOPE, IT NEEEEDS UPVALUES
-        ARGH! i hate lua for doing questionable shit
+        this fails when we cant look up upvalues
     ]]
-
     local sandbox = libox.coroutine.create_sandbox({
         code = [[
             function get_evil()
@@ -193,7 +213,32 @@ it("Limits upvalues", function()
 
     })
     local v = libox.coroutine.run_sandbox(sandbox)
-    minetest.debug(dump(v))
     return (v.is_err) and (v.is_special == true) and
         (v.errmsg == "Out of memory!")
+end)
+
+it("Time to execute and weigh in an reasonable environment, in milis", function()
+    local env = libox.create_basic_environment()
+    libox.coroutine.get_size(env, {}, coroutine.create(function() end))
+    -- JIT it up a little
+
+    local sandbox = libox.coroutine.create_sandbox({
+        code = [[
+            local e = _G -- Hehe i am an unsuspecting user not aware of this sandboxing software's implementation and i am sure this won't be a problem
+            coroutine.yield()
+        ]],
+        -- yeah
+        env = env,
+        size_limit = 1000,
+        time_limit = 1000000 -- 1 million microseconds, can you imagine that (that's definitely not 1 second)
+
+    })
+
+    local t1 = minetest.get_us_time()
+    libox.coroutine.run_sandbox(sandbox)
+    local sandboxd = libox.coroutine.active_sandboxes[sandbox]
+    return "time (both):" ..
+        (minetest.get_us_time() - t1) / 1000 ..
+        " size:" .. libox.coroutine.get_size(sandboxd.env, {}, sandboxd.thread)
+        .. " digiline sanitize thinks:" .. ({ libox.digiline_sanitize(env, true) })[2]
 end)

@@ -1,3 +1,4 @@
+-- currently, this doesn't work i think, idk, try at your own risk, i haven't maintained this
 local active_sandboxes = libox.coroutine.active_sandboxes
 
 local function create_thread(sandbox)
