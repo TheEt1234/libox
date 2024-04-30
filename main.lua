@@ -8,4 +8,3 @@ local MP = minetest.get_modpath("libox")
 dofile(MP .. "/env.lua")
 dofile(MP .. "/utils.lua")
 dofile(MP .. "/normal.lua")
---dofile(MP .. "/coroutine.lua") -- now defined in init.lua

@@ -23,7 +23,7 @@
 ## Environment
 `libox.create_basic_environment()` - get a basic secure environment already set up for you
 
-`libox.safe.*` - safe functions/classes, used in libox.create_basic_environment, used heavily internally do not modify this table
+`libox.safe.*` - safe functions/classes, used in libox.create_basic_environment, used internally, you shouldn't modify this table
 
 ## "Normal" sandbox
 
@@ -74,23 +74,19 @@ All of theese are configurable by the user
 - `def.time_limit` - used if debug.in_hook is not avaliable, by default 3000
 - `last_ran` - not set by you, but is the last time the sandbox was ran, used for garbage collection
 - `def.hook_time` - The hook function will execute every `def.hook_time` instructions, by default 10
-- `def.size_limit` - in *bytes*, the size limit of the sandbox, if trusted then upvalues and local variables are counted in too, by default 5 *megabytes*
+- `def.size_limit` - in *bytes*, the size limit of the sandbox, if trusted then upvalues and local variables are counted in too, by default 5 *megabytes*, aka `1024*1024*5` bytes
 
 `libox.coroutine.delete_sandbox(id)` - delete a sandbox by its id, equivilent to `libox.coroutine.active_sandboxes[id] = nil`
 
-`libox.coroutine.run_sandbox(ID, values_passed)`
-- `values_passed` - the values passed to the coroutine.resume function, so that in the sandbox it could: `local vals = coroutine.yield("blabla")`
-- Returns a table with:
-    - is_error - if its error or not, if this value is true you should delete the sandbox 
-    - is_special - If the error is emitted by the user or by the run_sandbox code
-    - errmsg - the error message
-    - ret_values - the return values
+`libox.coroutine.run_sandbox(ID, value_passed)`
+- `value_passed` - the value passed to the coroutine.resume function, so that in the sandbox it could: `local vals = coroutine.yield("blabla")`
+- Returns ok, errmsg
 
 `libox.coroutine.size_check(env, lim, thread)`
 - `env` - environment of the thread
 - `lim` - the limit
 - `thread` - the thread
-- if it fails this check then returns an error message in form of a table, else returns true
+- returns if its size (computed using `get_size`) is less than the lim
 - used internally
 
 `libox.coroutine.get_size(env, seen, thread, recursed)` 
@@ -100,4 +96,14 @@ All of theese are configurable by the user
 
 # Async
 - everything else other than the coroutine sandbox is avaliable in both sync and async environments
-- TODO: make a proper async version of the coroutine sandbox, `coroutine_async.lua` is not tested and doesn't work currently
+- coroutine sandbox is not avaliable in async because 
+1) I cannot import the debug.getlocal and debug.getupvalue functions into the async environment
+2) I cannot import a coroutine in the async environment
+
+# Todos
+- proper testing
+ - Verify performance
+ - Verify security
+- proper examples
+- Maybe automatic yielding? depends on how possible that is
+- Rewrite README.md

@@ -177,7 +177,7 @@ function api.create_sandbox(def)
     return ID
 end
 
-local function create_thread(sandbox)
+function api.create_thread(sandbox)
     if sandbox.code:byte(1) == 27 then
         return false, "Bytecode was not allowed."
     end
@@ -195,7 +195,6 @@ local function create_thread(sandbox)
     sandbox.thread = coroutine.create(f)
     return true
 end
-
 
 function api.delete_sandbox(id)
     active_sandboxes[id] = nil
@@ -283,6 +282,8 @@ local function locals(val, f_thread)
     return ret
 end
 
+api.locals = locals
+
 
 local function get_size(env, seen, thread, recursed)
     local deferred_weigh_locals = {}
@@ -339,95 +340,55 @@ api.get_size = get_size
 
 function api.size_check(env, lim, thread)
     if thread == nil then error("Thread is nil! you can't check the size!") end
-    local size = api.get_size(env, {}, thread)
-    if size > lim then
-        return {
-            is_err = true,
-            errmsg = "Out of memory!",
-            is_special = true
-        }
-    else
-        return true
-    end
+    local size = api.get_size(env, {}, thread, false)
+    return size < lim
 end
 
-function api.run_sandbox(ID, values_passed)
+function api.run_sandbox(ID, value_passed)
     --[[
-        Returns: {
-            is_err = bool,
-            is_special = bool,
-            ret_values = table<anything, very unsafe to call from>,
-            errmsg = string
-        }
+        Returns: ok, errmsg_or_value
     ]]
     local sandbox = active_sandboxes[ID]
     if sandbox == nil then
-        return {
-            is_err = true,
-            is_special = true,
-            errmsg = "Sandbox not found. (Garbage collected?)"
-        }
+        return false, "Sandbox not found. (Garbage collected?)"
     end
 
     sandbox.last_ran = os.clock()
 
     if sandbox.thread == nil then
-        local is_success, errmsg = create_thread(sandbox)
-        if is_success == false then
-            return {
-                is_err = true,
-                is_special = true,
-                errmsg = errmsg,
-            }
+        local ok, errmsg = api.create_thread(sandbox)
+        if ok == false then
+            return false, errmsg
         end
     end
 
     local thread = sandbox.thread
     if coroutine.status(thread) == "dead" then
-        return {
-            is_err = true,
-            errmsg = "The coroutine is dead, nothing to do.",
-            is_special = true
-        }
+        return false, "The coroutine is dead, nothing to do."
     end
 
-    -- the hazmat suit
-
     local ok, errmsg_or_value
-    pcall(function()
+
+    local pcall_ok = pcall(function()
         debug.sethook(thread, sandbox.in_hook(), "", sandbox.hook_time)
         getmetatable("").__index = sandbox.env.string
-
-        -- THE CODE THAT CALLS
-        ok, errmsg_or_value = coroutine.resume(thread, values_passed)
+        ok, errmsg_or_value = coroutine.resume(thread, value_passed)
     end)
+
     debug.sethook(thread)
     getmetatable("").__index = string
 
     local size_check = api.size_check(sandbox.env, sandbox.size_limit, thread)
-    if size_check ~= true then return size_check end
+    if not size_check then return false, "Out of memory!" end
 
-    if ok == nil then
-        return {
-            is_err = true,
-            is_special = true,
-            errmsg = "Something very weird happened, most likely timed out."
-        }
+    if not pcall_ok then -- idk how this happens lmao
+        return false, "Something very weird happened, most likely timed out."
     end
 
-    if ok == false then
-        return {
-            is_err = true,
-            is_special = false,
-            errmsg = errmsg_or_value,
-            ret_values = errmsg_or_value,
-        }
+    if not ok then
+        return false, errmsg_or_value
     else
-        return {
-            is_err = false,
-            ret_values = errmsg_or_value,
-            is_special = false
-        }
+        return true, errmsg_or_value
     end
 end
 
@@ -454,6 +415,7 @@ function api.garbage_collect()
     return #to_be_collected, size
 end
 
+-- export
 api.active_sandboxes = active_sandboxes
 libox.coroutine = api
 
