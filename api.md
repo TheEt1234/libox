@@ -1,7 +1,6 @@
 # Api docs
 
 ## Disclaimers
-- Currently i cannot guarrantee safety of this library, tests are extremely insufficent
 - ***DO NOT EVER CALL FUNCTIONS FROM THE ENVIRONMENT (once the environment is defined) AND DO NOT CALL ANY FUNCTIONS RETURNED BY THE SANDBOX*** that will just bypass the debug hook and allow someone to `repeat until false` and *stop* the server that way
 - anything coming out of the sandbox should *not* be called, and be checked for every single detail (like you are writing a digiline device)
 
@@ -10,6 +9,11 @@
 - hook: a lua function that runs every `n` instructions
 - environment: The values that the sandboxed code can work with
 - string sandbox: when the `__index` field of a string's metatable gets replaced with the sandboxes `string` (basically, a thing to prevent the sandbox from using unsafe string functions through `"":unsafe_function()`) 
+
+## Differences from luac-like sandboxing
+- The basic environment is much more permissive (but still maintains safety)
+- You get limited not by instructions (luacontroller calls them events for some reason??? even if it calls *triggers* events too??? this is so dumb) but by time *by default*
+- You get a traceback *by default*
 
 ## Utilities
 `libox.get_default_hook(max_time)` - Get the hook function that will terminate the program in `max_time` microseconds
@@ -107,10 +111,9 @@ coroutine sandbox is not avaliable in async because
 1) I cannot import the debug.getlocal and debug.getupvalue functions into the async environment
 2) I cannot import a coroutine in the async environment
 
+# Examples
+- [libox controller](https://github.com/TheEt1234/libox_controller)
+
 # Todos
-- proper testing
- - Verify performance
- - Verify security
 - proper examples
-- Maybe automatic yielding? depends on how possible that is
-- Rewrite README.md
+- ~~Maybe automatic yielding? depends on how possible that is~~ it's not really...

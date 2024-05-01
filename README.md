@@ -1,8 +1,9 @@
 # Libox
-# DO NOT CONSIDER THIS PROJECT SECURE CURRENTLY
 
 A minetest sandboxing library, offering a basic environment, utilities, normal sandbox and a "coroutine" sandbox
 
-See [api.md](https://github.com/TheEt1234/libox/blob/master/api.md) for documentation
+Everything is avaliable in the async environment except the coroutine sandbox (due to minetest limitations)
+
+See [api.md](https://github.com/TheEt1234/libox/blob/master/api.md) for documentation and definitions
 
 License: LGPLv3

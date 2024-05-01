@@ -4,12 +4,13 @@ function libox.get_default_hook(max_time)
     local current_time = time()
     return function()
         if time() - current_time > max_time then
-            error("Code timed out! Reason: Time limit exceeded, the limit:" .. tostring(max_time / 1000) .. "ms", 2)
             debug.sethook()
+            error("Code timed out! Reason: Time limit exceeded, the limit:" .. tostring(max_time / 1000) .. "ms", 2)
         end
     end
 end
 
+local TRACEBACK_LIMIT = 20
 function libox.traceback(...) -- directly taken from the async_controller mod
     local MP = minetest.get_modpath("libox")
     local args = { ... }
@@ -19,8 +20,8 @@ function libox.traceback(...) -- directly taken from the async_controller mod
 
     local traceback = "Traceback: " .. "\n"
     local level = 1
-    while true do
-        local info = debug.getinfo(level, "nlS")
+    while level < TRACEBACK_LIMIT do
+        local info = debug.getinfo(level, "nlS") -- can be quite slow actually
         if not info then break end
         local name = info.name
         local text
@@ -34,6 +35,8 @@ function libox.traceback(...) -- directly taken from the async_controller mod
         end
         level = level + 1
     end
+
+    if level == TRACEBACK_LIMIT then traceback = traceback .. "\n..." end
 
     local base = MP:sub(1, #errmsg - #MP)
     return errmsg:gsub(base, "<libox>", 1) .. "\n" .. traceback
@@ -130,20 +133,25 @@ function libox.digiline_sanitize(input, allow_functions, wrap)
     end
 end
 
-function libox.sandbox_lib_f(f, ...)
+function libox.sandbox_lib_f(f, opt_str_limit)
     --[[
         Sandbox external functions, call this on functions that
             - don't run user code
             - use "":sub(1, 2, whatever) syntax and that syntax is critical or use pcall or xpcall
+            - get laggy when supplied with gigantic sting inputs
 
-            ]]
-    local args = { ... }
+        ]]
     return function(...)
+        local args = { ... }
+        for _, v in pairs(args) do
+            if type(v) == "string" and #v > (opt_str_limit or 64000) then error("String too large", 2) end
+        end
+
         local string_meta = getmetatable("")
         local sandbox = string_meta.__index
 
         string_meta.__index = string
-        local retvalue = { f(unpack(args), ...) }
+        local retvalue = { f(...) }
         string_meta.__index = sandbox
 
         if not debug.gethook() then

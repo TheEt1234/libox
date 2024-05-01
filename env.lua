@@ -7,6 +7,13 @@ local function wrap(f, obj)
     end
 end
 
+function libox.safe.rep(str, n)
+    if #str * n > 64000 then
+        error("no its not that easy", 2)
+    end
+    return string.rep(str, n)
+end
+
 function libox.safe.PcgRandom(seed, seq)
     if seq and #seq > 1000 then error("Sequence too large, size limit is 1000", 2) end
     local pcg = PcgRandom(seed, sequence)
@@ -86,6 +93,7 @@ local function safe_date(str, time)
     elseif time < 0 or time >= TIME_MAX then
         return nil
     end
+
     if type(str) ~= "string" then
         return os.date("%c", time)
     end
@@ -149,15 +157,7 @@ function libox.create_basic_environment()
         format = string.format,
         len = string.len,
         lower = string.lower,
-        rep = function(string, n, sep)
-            if #string * n > 64000 then
-                error("no its not that easy", 2)
-            end
-            if #string * n * #sep > 64000 then
-                error("no its not that easy", 2)
-            end
-            return string.rep(string, n, sep)
-        end,
+        rep = libox.safe.rep,
         reverse = string.reverse,
         sub = string.sub,
         upper = string.upper,
@@ -182,11 +182,11 @@ function libox.create_basic_environment()
         insert_all = table.insert_all,
         key_value_swap = table.key_value_swap,
         shuffle = table.shuffle,
-        -- deperecated stuff lol
+        -- luajit helpers
         move = table.move,
+        -- deperecated stuff lol, no code should rely on this but whatever, i like foreach
         foreach = table.foreach,
         foreachi = table.foreachi,
-
     }
 
     env.math = {}
@@ -203,6 +203,9 @@ function libox.create_basic_environment()
 
     env.bit = table.copy(bit)
 
+    env.vector = table.copy(vector)
+    env.vector.metatable = nil
+
     env.os = {
         clock = os.clock,
         datetable = datetable,
@@ -212,20 +215,18 @@ function libox.create_basic_environment()
     }
 
     env.minetest = {
-        formspec_escape = minetest.formspec_escape,
-        explode_table_event = minetest.explode_table_event,
-        explode_textlist_event = minetest.explode_textlist_event,
-        explode_scrollbar_event = minetest.explode_scrollbar_event,
-        inventorycube = minetest.inventorycube,
-        urlencode = minetest.urlencode,
-        rgba = minetest.rgba,
-        encode_base64 = minetest.encode_base64,
-        decode_base64 = minetest.decode_base64,
-        get_us_time = minetest.get_us_time,
+        formspec_escape = libox.sandbox_lib_f(minetest.formspec_escape),
+        explode_table_event = libox.sandbox_lib_f(minetest.explode_table_event),
+        explode_textlist_event = libox.sandbox_lib_f(minetest.explode_textlist_event),
+        explode_scrollbar_event = libox.sandbox_lib_f(minetest.explode_scrollbar_event),
+        inventorycube = libox.sandbox_lib_f(minetest.inventorycube),
+        urlencode = libox.sandbox_lib_f(minetest.urlencode),
+        rgba = libox.sandbox_lib_f(minetest.rgba),
+        encode_base64 = libox.sandbox_lib_f(minetest.encode_base64),
+        decode_base64 = libox.sandbox_lib_f(minetest.decode_base64),
+        get_us_time = libox.sandbox_lib_f(minetest.get_us_time),
     } -- safe minetest functions
 
-    env.vector = table.copy(vector)
-    env.vector.metatable = nil
 
     -- extra global environment stuff
     for _, v in ipairs({

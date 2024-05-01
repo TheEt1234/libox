@@ -1,5 +1,5 @@
 local ie = minetest.request_insecure_environment()
-if ie == nil and (debug.getlocal == nil or debug.getupvalue == nil) then
+if ie == nil and (debug.getupvalue == nil and debug.getlocal == nil) then
     minetest.log("warning", [[
 ===== ATTENTION (this is mainly for servers)=======
 Libox is not included in trusted mods,
@@ -14,7 +14,7 @@ If you don't use coroutine sandboxes, feel free to ignore this warning
 Libox can also reuse debug.getlocal and getupvalue if it is already avaliable in the environment
 ========== ATTENTION END ==========
         ]])
-elseif debug.getlocal == nil or debug.getupvalue == nil then
+elseif debug.getlocal == nil or debug.getupvalue == nil and ie ~= nil then
     debug.getlocal = ie.debug.getlocal
     debug.getupvalue = ie.debug.getupvalue
 end
@@ -23,8 +23,14 @@ ie = nil
 
 local MP = minetest.get_modpath(minetest.get_current_modname())
 dofile(MP .. "/main.lua")
--- Files that are executed sync only
+-- Files that are executed sync only, coroutine.lua and *.test.lua
 dofile(MP .. "/coroutine.lua")
-dofile(MP .. "/coroutine.test.lua")
 
 minetest.register_async_dofile(MP .. "/main.lua")
+
+if minetest.settings:get_bool("libox_controller.enable_tests") then
+    local test = MP .. "/test"
+    dofile(test .. "/basic_testing.lua")
+    dofile(test .. "/coroutine.test.lua")
+    dofile(test .. "/normal.test.lua")
+end

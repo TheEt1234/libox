@@ -21,7 +21,7 @@ function libox.normal_sandbox(def)
     end
 
 
-    debug.sethook(in_hook, "", def.hook_time)
+    debug.sethook(in_hook, "", def.hook_time or 10)
     getmetatable("").__index = env.string
     local ok, ret = xpcall(f, error_handler)
     debug.sethook()
