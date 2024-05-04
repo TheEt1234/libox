@@ -202,10 +202,10 @@ function api.is_sandbox_dead(id)
     if sandbox == nil then return true end
     if sandbox.thread == nil then return false end -- api.run_sandbox will work just fine
     if coroutine.status(sandbox.thread) == "dead" then return true end
-    return true
+    return false
 end
 
-function api.delete_sandbox(id)
+function api.delete_sandbox(id) -- idk if i should deprecate this? but im not gonna use it
     active_sandboxes[id] = nil
 end
 
