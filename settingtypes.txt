@@ -1,6 +1,3 @@
-# Enable loading of tests, used in development
-libox.enable_tests (Enable tests) bool false
-
 # ALL coroutine sandboxes will stop
 # once lua's memory usage hits this treshold (In gigabytes)
 # I recomend setting this to slightly below your memory size

@@ -196,4 +196,14 @@ until false
                 ({ libox.digiline_sanitize(env, true) })[2] .. " lua gc thinks: " .. collectgarbage("count") * 1024
             )
         end)
+    it("Can detect if sandbox is dead", function(assert)
+        local sandbox = libox.coroutine.create_sandbox({
+            code = "return",
+            env = {},
+            size_limit = 1000,
+            time_limit = 1000
+        })
+        libox.coroutine.run_sandbox(sandbox)
+        assert(libox.coroutine.is_sandbox_dead(sandbox))
+    end)
 end, true)

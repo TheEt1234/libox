@@ -23,14 +23,14 @@ ie = nil
 
 local MP = minetest.get_modpath(minetest.get_current_modname())
 dofile(MP .. "/main.lua")
+
 -- Files that are executed sync only, coroutine.lua and *.test.lua
 dofile(MP .. "/coroutine.lua")
 
+-- async files
 minetest.register_async_dofile(MP .. "/main.lua")
 
-if minetest.settings:get_bool("libox_controller.enable_tests") then
-    local test = MP .. "/test"
-    dofile(test .. "/basic_testing.lua")
-    dofile(test .. "/coroutine.test.lua")
-    dofile(test .. "/normal.test.lua")
-end
+local test = MP .. "/test"
+dofile(test .. "/basic_testing.lua")
+dofile(test .. "/coroutine.test.lua")
+dofile(test .. "/normal.test.lua")

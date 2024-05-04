@@ -115,6 +115,7 @@ local function setting(v, thing)
         return settings:get_bool(thing)
     end
 end
+
 local function do_the_settings_thing(name, table)
     for k, v in pairs(table) do
         if type(v) == "table" then
@@ -193,6 +194,14 @@ function api.create_thread(sandbox)
     end
 
     sandbox.thread = coroutine.create(f)
+    return true
+end
+
+function api.is_sandbox_dead(id)
+    local sandbox = active_sandboxes[id]
+    if sandbox == nil then return true end
+    if sandbox.thread == nil then return false end -- api.run_sandbox will work just fine
+    if coroutine.status(sandbox.thread) == "dead" then return true end
     return true
 end
 

@@ -102,6 +102,9 @@ All of theese are configurable by the user
 - get the size in bytes of a thread, used by size_check
 - normal usage: `libox.coroutine.get_size(env, {}, thread, false)`
 
+`libox.coroutine.is_sandbox_dead(id)`
+- detects if the sandbox is dead
+
 
 # Async
 - everything else other than the coroutine sandbox is avaliable in both sync and async environments
