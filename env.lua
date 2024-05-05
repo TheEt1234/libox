@@ -119,7 +119,6 @@ function libox.create_basic_environment()
     -- INCLUDES: basic lib (minus the coroutine, that thing can't be serialized), string lib, table lib, math, bit, os
     -- is meant to be added on top of
     local env = {
-        _VERSION = _VERSION,
         assert = assert,
         error = error,
         collectgarbage = function(arg)
@@ -162,7 +161,7 @@ function libox.create_basic_environment()
         sub = string.sub,
         upper = string.upper,
         -- minetest helpers
-        trim = string.trim, -- WARN: i dont know about this, but probably alright
+        trim = string.trim,
         split = function(str, delim, include_empty, max_splits, sep_is_pattern)
             if sep_is_pattern == true then
                 error("No the seperator won't be a pattern", 2)
