@@ -56,7 +56,7 @@
 - `fmod`, `frexp`, `huge`, `ldexp`, `log`, `log10`, `max`, `min`, `modf`, `pi`, `pow`,
 - `rad`, `random`, `sin`, `sinh`, `sqrt`, `tan`, `tanh`,
 
--  `hypot`, `sign`, `factorial`, `round` - from minetest
+-  `hypot`, `sign`, `factorial`, `round`  - from minetest
 
 # Bit library (bit.*)
 - Copied, unchanged
@@ -92,4 +92,4 @@
 # extra environment stuffs (*) mostly from minetest
 - `dump` `dump2` = unchanged
 - PcgRandom = you are given an interface, where `rand_normal_dist` has limited amount of tries and you call the functions by doing `my_random.func` not `my_random:func`
-- PerlinNoise = Unchanged, you are given the raw userdata, call it by `my_perlin_noise:func`, may be changed to give an interface instead
+- PerlinNoise = Unchanged, you are given the raw userdata, call it by `my_perlin_noise:func`, may be changed to give an interface instead, because accidentally serializing userdata => dead
