@@ -11,15 +11,14 @@ function libox.get_default_hook(max_time)
 end
 
 local TRACEBACK_LIMIT = 20
-function libox.traceback(...) -- directly taken from the async_controller mod
+
+function libox.traceback(errmsg)
     local MP = minetest.get_modpath("libox")
-    local args = { ... }
-    local errmsg = tostring(args[1])
-    local string_meta = getmetatable("")
-    string_meta.__index = string -- Leave string sandbox permanently
+    local errmsg = tostring(errmsg)
 
     local traceback = "Traceback: " .. "\n"
     local level = 1
+
     while level < TRACEBACK_LIMIT do
         local info = debug.getinfo(level, "nlS") -- can be quite slow actually
         if not info then break end
@@ -36,7 +35,7 @@ function libox.traceback(...) -- directly taken from the async_controller mod
         level = level + 1
     end
 
-    if level == TRACEBACK_LIMIT then traceback = traceback .. "\n..." end
+    if level == TRACEBACK_LIMIT then traceback = traceback .. "\n... and more" end
 
     local base = MP:sub(1, #errmsg - #MP)
     return errmsg:gsub(base, "<libox>", 1) .. "\n" .. traceback
@@ -161,7 +160,5 @@ function libox.sandbox_lib_f(f, opt_str_limit)
     end
 end
 
-if rawget(_G, "jit") then
-    -- unsure if this is required for fastness but whatever
-    jit.on(libox.digiline_sanitize, true)
-end
+libox.safe_traceback = libox.sandbox_lib_f(libox.safe_traceback)
+-- make safe

@@ -18,7 +18,7 @@
 ## Utilities
 `libox.get_default_hook(max_time)` - Get the hook function that will terminate the program in `max_time` microseconds
 
-`libox.traceback(...) -- directly taken from the async_controller mod` - a function that gives a more useful traceback (by simplifying paths and more:tm:)
+`libox.traceback(...)` - a function that gives a friendlier traceback, now safe to expose to sandbox
 
 `libox.digiline_sanitize(input, allow_functions, wrap)` - use this instead of your own clean_and_weigh_digiline_message implementation, `wrap` is a function that accepts a function and returns another one, this gets called on user functions
 

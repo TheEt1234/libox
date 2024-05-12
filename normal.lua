@@ -4,7 +4,7 @@ local BYTECODE_CHAR = 27
 function libox.normal_sandbox(def)
     local code = def.code
     local env = def.env
-    local error_handler = def.error_handler or libox.traceback
+    local error_handler = def.error_handler or libox.safe_traceback
     local in_hook = def.in_hook or libox.get_default_hook(def.max_time)
 
     if code:byte(1) == BYTECODE_CHAR then
