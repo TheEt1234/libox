@@ -31,6 +31,15 @@ function libox.safe.PcgRandom(seed, seq)
     return interface
 end
 
+function libox.safe.PerlinNoise(...)
+    local core = PerlinNoise(...)
+    local interface = {
+        get_2d = wrap(core, core.get_2d),
+        get_3d = wrap(core, core.get_3d)
+    }
+    return interface
+end
+
 function libox.safe.pcall(f, ...)
     local ret_values = { pcall(f, ...) }
     if not debug.gethook() then
@@ -65,7 +74,7 @@ function libox.safe.get_loadstring(env) -- chunkname is ignored
                 2)
         end
         if type(code) == "string" and #code > 64000 then error("Code too long :/", 2) end
-        if code:byte(1) == BYTECODE_CHAR then
+        if string.byte(code, 1) == BYTECODE_CHAR then
             error("dont sneak in bytecode (mod security will prevent you anyway)", 2)
         end
         local f, errmsg = loadstring(code)
@@ -237,7 +246,9 @@ function libox.create_basic_environment()
     -- oh yeah who could forget...
     -- some random minetest stuffs
     env.PcgRandom = libox.safe.PcgRandom
-    env.PerlinNoise = PerlinNoise
+    env.PerlinNoise = libox.safe.PerlinNoise
+
+    env.traceback = libox.traceback
 
     return env
 end

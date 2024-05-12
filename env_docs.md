@@ -1,5 +1,5 @@
 # The libox environment
-- mods will extend this
+- mods *will* extend this, there is nothing really useful that you can do with this if not extended
 
 # Globals (*)
 - assert = unchanged
@@ -15,8 +15,9 @@
 - tonumber = unchanged
 - tostring = unchanged
 - type = unchanged
-- loadstring(code) = libox.safe.get_loadstring(env) => does the cool sandboxing stuff like limiting environment, turning off JIT optimizations for the function, also you can't provide a chunkname
+- loadstring(code) = libox.safe.get_loadstring(env) => does the lame sandboxing stuff like limiting environment, turning off JIT optimizations for the function, also you can't provide a chunkname
 - _G = points back to the sandbox environment
+- traceback = libox.traceback
 
 # String library (string.* or (""):* )
 
@@ -92,4 +93,7 @@
 # extra environment stuffs (*) mostly from minetest
 - `dump` `dump2` = unchanged
 - PcgRandom = you are given an interface, where `rand_normal_dist` has limited amount of tries and you call the functions by doing `my_random.func` not `my_random:func`
-- PerlinNoise = Unchanged, you are given the raw userdata, call it by `my_perlin_noise:func`, may be changed to give an interface instead, because accidentally serializing userdata => dead
+- PerlinNoise = Changed to give an interface, call it like `my_perlin.func` not `my_perlin:func`
+
+# notes to mod devs
+- Don't be afraid to use userdata, but be afraid where it can get to, it should not be serialized, never.
