@@ -46,7 +46,6 @@ end
 local TRACEBACK_LIMIT = 20
 
 function libox.traceback(errmsg)
-    minetest.log("Got here")
     local errmsg = tostring(errmsg) or ""
 
     local traceback = "Traceback: " .. "\n"
@@ -69,7 +68,6 @@ function libox.traceback(errmsg)
     end
 
     if level == TRACEBACK_LIMIT then traceback = traceback .. "\n... and more" end
-    minetest.log("GOT HERE")
     return libox.shorten_path(errmsg) .. "\n" .. traceback
 end
 
