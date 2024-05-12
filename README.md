@@ -8,4 +8,10 @@ See [api.md](https://github.com/TheEt1234/libox/blob/master/api.md) for document
 
 See [env_docs.md](https://github.com/TheEt1234/libox/blob/master/env_docs.md) for documentation of the sandbox environment
 
-License: LGPLv3
+# Optional dependancies
+dbg - not actually used for debugging, just used to provide `dbg.shorten_path`, if unavaliable it will fallback to the copied implementation
+
+# License
+Code (unless mentioned somewhere differently) - LGPLv3  
+Inspiration: [Luacontrollers](https://github.com/minetest-mods/mesecons/tree/master/mesecons_luacontroller)  
+Traceback's shortened paths: [The minetest debug mod's shorten_path.lua](https://github.com/appgurueu/dbg/blob/master/src/shorten_path.lua) - MIT licensed

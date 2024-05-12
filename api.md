@@ -24,6 +24,7 @@
 
 `libox.sandbox_lib_f(f, ...)` - use this if you want to escape the string sandbox (do this if you are not 100% sure that your code is free of `"":this_stuff()`) **don't use this on functions that run user functions**
 
+`libox.shorten_path(path)` - use this to shorten a path, it will convert `/home/user/blabla/.minetest/modname/x.lua` into `modname:x.lua` - if the `dbg` mod is avaliable, it will simply use `dbg.shorten_path`
 ## Environment
 `libox.create_basic_environment()` - get a basic secure environment already set up for you
 

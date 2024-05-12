@@ -10,17 +10,50 @@ function libox.get_default_hook(max_time)
     end
 end
 
+--[[
+    PATH SHORTENING: from dbg
+]]
+
+local modpath_trie = {}
+for _, modname in pairs(minetest.get_modnames()) do
+    local path = minetest.get_modpath(modname)
+    local subtrie = modpath_trie
+    for char in path:gmatch "." do
+        subtrie[char] = subtrie[char] or {}
+        subtrie = subtrie[char]
+    end
+    subtrie["\\"] = modname
+    subtrie["/"] = modname
+end
+
+function libox.shorten_path(path)
+    -- Search for a prefix (paths have at most one prefix)
+    local subtrie = modpath_trie
+    for i = 1, #path do
+        if type(subtrie) == "string" then
+            return subtrie .. ":" .. path:sub(i)
+        end
+        subtrie = subtrie[path:sub(i, i)]
+        if not subtrie then return path end
+    end
+    return path
+end
+
+if minetest.global_exists("dbg") then
+    libox.shorten_path = dbg.shorten_path
+end
+
 local TRACEBACK_LIMIT = 20
 
 function libox.traceback(errmsg)
-    local MP = minetest.get_modpath("libox")
-    local errmsg = tostring(errmsg)
+    minetest.log("Got here")
+    local errmsg = tostring(errmsg) or ""
 
     local traceback = "Traceback: " .. "\n"
     local level = 1
 
     while level < TRACEBACK_LIMIT do
-        local info = debug.getinfo(level, "nlS") -- can be quite slow actually
+        local info = debug.getinfo(level, "nlS") -- can be quite slow actually, thats why TRACEBACK_LIMIT is in place
         if not info then break end
         local name = info.name
         local text
@@ -36,9 +69,8 @@ function libox.traceback(errmsg)
     end
 
     if level == TRACEBACK_LIMIT then traceback = traceback .. "\n... and more" end
-
-    local base = MP:sub(1, #errmsg - #MP)
-    return errmsg:gsub(base, "<libox>", 1) .. "\n" .. traceback
+    minetest.log("GOT HERE")
+    return libox.shorten_path(errmsg) .. "\n" .. traceback
 end
 
 function libox.digiline_sanitize(input, allow_functions, wrap)
