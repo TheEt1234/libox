@@ -1,92 +1,5 @@
--- a new type of sandbox just dropped!
-
 local active_sandboxes = {}
 local api = {}
---[[
-    Problems we have to solve:
-        Storing the coroutine somewhere
-            - We CANNOT serialize it without some real shenanigans (would require the mod to be trusted)
-        *Some* level of persistance (persistance through yields)
-        Proper async support (optional)
-
-    As for storing the coroutines:
-       - We can simply store it outside of the node and not worry about persistance thru server reboots
-           - We need to also somehow garbage collect un-used sandboxes too
-
-
-    ## This is duable ##
-
-    *OH YEAH, ANOTHER PROBLEM*
-    ***M E M O R Y***
-    How do we make absolute sure that the sandbox cannot overfill the memory
-
-    Well crap....
-
-    i has idea
-    you know we have theese fancy debuggery hookeys
-    yeah what if we could just
-    ```lua
-        ...
-        debug.sethook(thread, function()
-            ...
-            if collectgarbage("count")>critical_treshold then
-                error("Sandbox memory reached critical treshold, sorry... aborting")
-            end
-        end, "", 1)
-
-        ...
-        env = nil
-        collectgarbage("collect")
-    ```
-    we can also give the script *some* control over the garbage collector,
-    but making sure to revert everything it did after execution **if possible**
-
-================================================
-    So, we need something that is able to look up sandboxes
-    We could use an array, but when we do something like active_sandboxes[50] = nil... well what about the sandbox 51
-    and uhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh right what about it
-    ok
-    i will just use an array i guess?
-
-    yeah that will make garbage collection slightly faster... actually no it won't
-    what about generating new IDs? just math.random() until we get one that isn't occupied
-    because doing a full table.remove seems stupid
-
-    whatever i just wanted to use a random string
-==========================================
-    Oh yeah about that "garbage collection"
-    How am i gonna do it...
-
-    My initial idea was that after a certain time,
-    a monster would iterate through alll the sandboxes,
-    then select the ones that have been untouched for a long time and just delete them
-
-    Honestly that sounds fine
-]]
---[[
-    OH CRAP ANOTHER VERY VERY TRICKY PROBLEM
-    LOCAL VARIABLES
-    yeah
-    them....
-
-    They bypass every single way we can weigh the environment
-    Unless...
-
-    We can do:
-        Some crazy lua shittery (probably requires some debug functions)
-        Some crazy native shittery (requires mod to be trusted, and optionally requires to compile on windows too)
-            - By native i mean some language that can interface with the Lua C api (i think its not just C? idk)
-
-    I'd much rather prefer to do lua shittery rather than learn C or rust or whatever
-    Oh yeah also crazy native shittery might allow for some fun features like automatic yielding
-    Honestly im kinda willing to learn C and make this mod optionally rely on the trusted environment
-        - That was a lie i am not learning C
-
-    But well, options for lua shittery:
-        debug.getlocal (actually looks like the best one?)
-    Okay we are using that
-
-]]
 
 local gigabyte = 1024 * 1024 * 1024
 
@@ -143,7 +56,6 @@ function api.get_default_hook(max_time)
     -- Why seperate from the libox util function?
     -- because of the critical memory treshold
     -- TODO: eventually put this in the default libox hook
-    -- oh yeah also this is function hell i know
 
     return function()
         local time = minetest.get_us_time
@@ -170,15 +82,16 @@ function api.create_sandbox(def)
         is_garbage_collected = def.is_garbage_collected or true,
         env = def.env or {},
         in_hook = def.in_hook or api.get_default_hook(def.time_limit or 3000),
-        --error_handler = def.error_handler or libox.traceback,
-        last_ran = os.clock(),                         -- for gc
+        --error_handler = def.error_handler or libox.traceback, -- we can't do this
+        last_ran = os.clock(),                         -- for gc and logging
         hook_time = def.hook_time or 10,
-        size_limit = def.size_limit or 1024 * 1024 * 5 -- 5 megabytes... yeah huge i know
+        size_limit = def.size_limit or 1024 * 1024 * 5 -- 5 megabytes... wow
     }
     return ID
 end
 
 function api.create_thread(sandbox)
+    -- prohibited by mod security anyway, basically bytecode is fancy stuff that allows rce and we dont want that
     if sandbox.code:byte(1) == 27 then
         return false, "Bytecode was not allowed."
     end
@@ -187,10 +100,12 @@ function api.create_thread(sandbox)
     if not f then
         return false, msg
     end
+
     setfenv(f, sandbox.env)
 
     if rawget(_G, "jit") then
-        jit.off(f, true) -- turn jit off for that function and yes this is needed or the user can repeat until false, sorry
+        jit.off(f, true)
+        -- turn jit off for that function and yes this is needed or the user can repeat until false, sorry
     end
 
     sandbox.thread = coroutine.create(f)
@@ -205,18 +120,9 @@ function api.is_sandbox_dead(id)
     return false
 end
 
-function api.delete_sandbox(id) -- idk if i should deprecate this? but im not gonna use it
-    active_sandboxes[id] = nil
-end
-
-local function locals(val, f_thread)
-    --[[
-        Arguments to this are sorta confusing but better what we had before
-        f_thread: optional thread if type(val) == "function"
-        val: the value you are trying to get locals of, can be function or thread, if thread then f_thread is ignored
-    ]]
+function api.locals(val, f_thread)
     local ret = {
-        _F = "", -- the function itself, weighed using string.dump
+        _F = "", -- the function itself, weighed using string.dump, if thread this is ignored
         _L = {}, -- Locals
         _U = {}  -- Upvalues
     }
@@ -224,14 +130,6 @@ local function locals(val, f_thread)
     local getinfo, getlocal, getupvalue = debug.getinfo, debug.getlocal, debug.getupvalue
 
     if type(val) == "thread" then
-        -- i don't think the thread can have any upvalues
-        -- as in like....
-        -- yeah....
-        -- lets take a look at a closure, function x() local n = {} return function() return n end end
-        -- that has n
-        -- but yeah yeah
-        -- fuck i got lost
-        -- lets just check them just in case
         local level = getinfo(val, 1, "u")
         if level ~= nil then
             local index = 1
@@ -261,8 +159,9 @@ local function locals(val, f_thread)
     elseif type(val) == "function" then
         local func_info = getinfo(f_thread, val, "Su")
         if not func_info or func_info.what == "C" then
+            -- C functions are not weighed because... well... they can't be
             return {}
-        end -- whatever
+        end
         local f_size = string.dump(val)
         ret._F = f_size
         local index = 1
@@ -291,10 +190,7 @@ local function locals(val, f_thread)
     return ret
 end
 
-api.locals = locals
-
-
-local function get_size(env, seen, thread, recursed)
+function api.get_size(env, seen, thread, recursed)
     local deferred_weigh_locals = {}
     if not recursed then
         deferred_weigh_locals[#deferred_weigh_locals + 1] = thread
@@ -335,17 +231,15 @@ local function get_size(env, seen, thread, recursed)
     if debug.getlocal ~= nil and debug.getupvalue ~= nil then
         for i = 1, #deferred_weigh_locals do
             local v = deferred_weigh_locals[i]
-            local their_locals = locals(v, thread)
+            local their_locals = api.locals(v, thread)
 
-            local size = get_size(their_locals, seen, thread, true)
+            local size = api.get_size(their_locals, seen, thread, true)
             retv = retv + size
         end
     end
 
     return retv
 end
-
-api.get_size = get_size
 
 function api.size_check(env, lim, thread)
     if thread == nil then error("Thread is nil! you can't check the size!") end
@@ -354,9 +248,6 @@ function api.size_check(env, lim, thread)
 end
 
 function api.run_sandbox(ID, value_passed)
-    --[[
-        Returns: ok, errmsg_or_value
-    ]]
     local sandbox = active_sandboxes[ID]
     if sandbox == nil then
         return false, "Sandbox not found. (Garbage collected?)"
@@ -382,7 +273,7 @@ function api.run_sandbox(ID, value_passed)
         debug.sethook(thread, sandbox.in_hook(), "", sandbox.hook_time)
         getmetatable("").__index = sandbox.env.string
         ok, errmsg_or_value = coroutine.resume(thread, value_passed)
-    end)
+    end) -- in rare cases this is actually nessesary, in all other cases coroutine.resume works perfectly fine to catch the error
 
     debug.sethook(thread)
     getmetatable("").__index = string

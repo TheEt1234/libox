@@ -85,8 +85,6 @@ All of theese are configurable by the user
 - `def.hook_time` - The hook function will execute every `def.hook_time` instructions, by default 10
 - `def.size_limit` - in *bytes*, the size limit of the sandbox, if trusted then upvalues and local variables are counted in too, by default 5 *megabytes*, aka `1024*1024*5` bytes
 
-`libox.coroutine.delete_sandbox(id)` - delete a sandbox by its id, equivilent to `libox.coroutine.active_sandboxes[id] = nil`
-
 `libox.coroutine.run_sandbox(ID, value_passed)`
 - `value_passed` - the value passed to the coroutine.resume function, so that in the sandbox it could: `local vals = coroutine.yield("blabla")`
 - Returns ok, errmsg
