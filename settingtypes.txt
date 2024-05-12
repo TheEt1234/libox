@@ -10,6 +10,7 @@ libox.memory_treshold (Memory treshold) float 5
 # 1) You have a mod that does not clean up sandboxes after itself
 # - Also, unloaded areas may be a huge issue
 # 2) You have way too many sandboxes running
+# GARBAGE COLLECTION IS A HIGHLY EXPERIMENTAL FEATURE!
 libox.gc.auto (Enable automatic garbage collection) bool false
 
 

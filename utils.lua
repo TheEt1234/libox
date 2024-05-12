@@ -160,5 +160,4 @@ function libox.sandbox_lib_f(f, opt_str_limit)
     end
 end
 
-libox.safe_traceback = libox.sandbox_lib_f(libox.safe_traceback)
--- make safe
+libox.safe_traceback = libox.sandbox_lib_f(libox.safe_traceback) -- make it work
