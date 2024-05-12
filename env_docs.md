@@ -89,7 +89,8 @@
 
 \* All of theese functions fail when you give them gigantic string inputs
 
-
+# pattern library (pat.*)
+- Pure lua implementations of functions `find`, `match`, `gmatch`, and they support patterns
 # extra environment stuffs (*) mostly from minetest
 - `dump` `dump2` = unchanged
 - PcgRandom = you are given an interface, where `rand_normal_dist` has limited amount of tries and you call the functions by doing `my_random.func` not `my_random:func`

@@ -249,7 +249,11 @@ function libox.create_basic_environment()
     env.PerlinNoise = libox.safe.PerlinNoise
 
     env.traceback = libox.traceback
-    env.pat = table.copy(libox.pat)
+    env.pat = {
+        find = wrap(libox.pat.find, libox.pat),
+        match = wrap(libox.pat.match, libox.pat),
+        gmatch = wrap(libox.pat.gmatch, libox.pat),
+    }
 
     libox.supply_additional_environment(env)
     return env

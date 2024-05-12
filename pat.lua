@@ -31,6 +31,7 @@ local LUA_MAXCAPTURES = 32
 local CAP_UNFINISHED = -1
 local CAP_POSITION = -2
 
+
 local L_ESC = 37 -- 37='%'
 -- only used for string.find(x, y, z, true)
 -- local SPECIALS = '^$*+?.([%-'
