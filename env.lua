@@ -192,7 +192,7 @@ function libox.create_basic_environment()
         shuffle = table.shuffle,
         -- luajit helpers
         move = table.move,
-        -- deperecated stuff lol, no code should rely on this but whatever, i like foreach
+        -- deperecated stuff lol, no code should rely on this but whatever, i like foreach for the same reason i like vector:apply
         foreach = table.foreach,
         foreachi = table.foreachi,
     }
@@ -205,7 +205,7 @@ function libox.create_basic_environment()
 
         -- minetest helpers
         "hypot", "sign", "factorial", "round"
-    }) do -- todo: get rid of math.random and replace it with a PcgRandom.next ?
+    }) do
         env.math[v] = math[v]
     end
 
@@ -249,6 +249,8 @@ function libox.create_basic_environment()
     env.PerlinNoise = libox.safe.PerlinNoise
 
     env.traceback = libox.traceback
+    env.pat = table.copy(libox.pat)
 
+    libox.supply_additional_environment(env)
     return env
 end

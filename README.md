@@ -14,4 +14,5 @@ dbg - not actually used for debugging, just used to provide `dbg.shorten_path`, 
 # License
 Code (unless mentioned somewhere differently) - LGPLv3  
 Inspiration: [Luacontrollers](https://github.com/minetest-mods/mesecons/tree/master/mesecons_luacontroller)  
-Traceback's shortened paths: [The minetest debug mod's shorten_path.lua](https://github.com/appgurueu/dbg/blob/master/src/shorten_path.lua) - MIT licensed
+libox.traceback's shortened paths: [The minetest dbg mod's shorten_path.lua](https://github.com/appgurueu/dbg/blob/master/src/shorten_path.lua) - MIT licensed  
+pat.lua: [source](https://notabug.org/pgimeno/patlua/src/master/pat.lua) [the mesecon issue](https://github.com/minetest-mods/mesecons/issues/456) - MIT licensed
