@@ -9,8 +9,8 @@ read_globals = {
         "shuffle", "move"
     }},
     "minetest", "vector", "bit", "ItemStack",
-    "dump", "dump2", "PerlinNoise",
+    "dump", "dump2", "PerlinNoise", "PcgRandom",
 
-    "mesecon", "digilines", "libox"
+    "mesecon", "digilines", "dbg"
 
 }

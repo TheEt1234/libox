@@ -65,7 +65,6 @@ function api.get_default_hook(max_time)
             if time() - current_time > max_time then
                 debug.sethook()
                 error("Code timed out! Reason: Time limit exceeded, the limit:" .. tostring(max_time / 1000) .. "ms", 2)
-                -- If theese 2 lines of code were swapped, total chaos would happen, i have no idea why it makes so much of a difference and why the hook is literally unstoppable
             elseif collectgarbage("count") >= real_mem_treshold then
                 debug.sethook()
                 collectgarbage("collect")
@@ -129,10 +128,11 @@ function api.locals(val, f_thread)
 
     local getinfo, getlocal, getupvalue = debug.getinfo, debug.getlocal, debug.getupvalue
 
+    local index
     if type(val) == "thread" then
         local level = getinfo(val, 1, "u")
         if level ~= nil then
-            local index = 1
+            index = 1
             while true do
                 local k, v = getlocal(val, 1, index)
                 if k ~= nil then
@@ -142,8 +142,9 @@ function api.locals(val, f_thread)
                 end
                 index = index + 1
             end
+
             if level.nups > 0 then
-                local index = 1
+                index = 1
                 local f = getinfo(val, 1, "f").func
                 while true do
                     local k, v = getupvalue(f, index)
@@ -164,7 +165,7 @@ function api.locals(val, f_thread)
         end
         local f_size = string.dump(val)
         ret._F = f_size
-        local index = 1
+        index = 1
         while true do
             local k, v = getlocal(val, index)
             if k ~= nil then
@@ -175,7 +176,7 @@ function api.locals(val, f_thread)
             index = index + 1
         end
         if func_info.nups > 0 then
-            local index = 1
+            index = 1
             while true do
                 local k, v = getupvalue(val, index)
                 if k ~= nil then
@@ -196,7 +197,7 @@ function api.get_size(env, seen, thread, recursed)
         deferred_weigh_locals[#deferred_weigh_locals + 1] = thread
     end
 
-    local function internal(x, seen)
+    local function internal(x, seen) -- luacheck: ignore
         local t = type(x)
         if t == "string" then
             return #x + 25

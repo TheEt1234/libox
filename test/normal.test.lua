@@ -1,5 +1,6 @@
 libox.test.describe("Normal sandbox (tests the environment)", function(it)
-    it("Doesn't do bytecode", function(assert) -- mod security prevents it anyway kek
+    it("Doesn't do bytecode", function(assert)
+        -- mod security prevents it anyway
         assert(not libox.normal_sandbox({
             code = string.dump(assert),
             env = {},
@@ -27,9 +28,9 @@ libox.test.describe("Normal sandbox (tests the environment)", function(it)
             max_time = 1000
         }))
     end)
-    it("Isn't vurnable to severe trollery", function(assert, good, bad, custom)
+    it("Isn't vurnable to severe trollery", function(_, _, bad, custom)
         local t1 = minetest.get_us_time()
-        local ok, errmsg = libox.normal_sandbox({
+        local ok = libox.normal_sandbox({
             code = [[
                 local x = "."
                 repeat
@@ -38,7 +39,9 @@ libox.test.describe("Normal sandbox (tests the environment)", function(it)
             ]],
             env = {},
             max_time = 10000, -- 10 milis for this
-        })                    -- normal luac sandbox would kill itself
+        })
+        -- normal luac sandbox would kill itself
+        -- try it
         local t2 = minetest.get_us_time()
         if ok then
             bad()
@@ -62,15 +65,20 @@ libox.test.describe("Normal sandbox (tests the environment)", function(it)
     it("Can loadstring securely", function(assert)
         assert(not libox.normal_sandbox({
             code = [[
-                loadstring('assert(debug)')() -- we don't use minetest as an example because libox.create_basic_environment already does some magic
+                loadstring('assert(debug)')()
+                -- we don't use minetest as an example
+                -- because libox.create_basic_environment already creates a global with that name
             ]],
             env = libox.create_basic_environment(),
             max_time = 1000,
         }))
     end)
-    it("Can handle shenanigans", function(assert, good, bad, custom)
+    it("Can handle shenanigans", function(_, _, bad, custom)
         --[[
-            This attempts to abuse libox.traceback to create a gigantic errmsg and force several executions of debug.getinfo
+            This attempts to abuse libox.traceback to create a gigantic
+            error message and force several executions of debug.getinfo
+
+            (Now fixed, the limit is 20 debug.getinfo's before just stopping)
         ]]
         local code = [[
             pcall(loadstring(code)())
@@ -91,7 +99,7 @@ libox.test.describe("Normal sandbox (tests the environment)", function(it)
             custom("took: " .. (t2 - t1) .. "us, sandbox was given 10 000 us")
         end
     end)
-    it("Can't abuse string.rep", function(assert, good, bad, custom)
+    it("Can't abuse string.rep", function(assert, _, _, _)
         assert(not libox.normal_sandbox({
             code = "string.rep('a',9999999)",
             env = libox.create_basic_environment(),

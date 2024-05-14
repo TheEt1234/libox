@@ -69,9 +69,7 @@ end
 function libox.safe.get_loadstring(env) -- chunkname is ignored
     return function(code, chunkname)
         if chunkname ~= nil then
-            error(
-                "Adding a chunkname is forbidden, see https://www.lua-users.org/wiki/SandBoxes i dont know if this is actually true but yeah, besides who cares",
-                2)
+            error("Adding a chunkname is forbidden", 2)
         end
         if type(code) == "string" and #code > 64000 then error("Code too long :/", 2) end
         if string.byte(code, 1) == BYTECODE_CHAR then
@@ -122,10 +120,9 @@ end
 function libox.create_basic_environment()
     --[[
         get the safest, least strict lua environment
-        don't add setfenv/getfenv here, or that could cause RCE or allow some REALLY nasty crap (like modifying environments of library functions), while that would be *fun* to mess with and exploit, i don't think we should sacrefice some serious security for "it would be fun"
     ]]
 
-    -- INCLUDES: basic lib (minus the coroutine, that thing can't be serialized), string lib, table lib, math, bit, os
+    -- INCLUDES: basic lib (minus coroutine, add that yourself if you need to), string, table, math, bit, os
     -- is meant to be added on top of
     local env = {
         assert = assert,

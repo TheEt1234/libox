@@ -17,7 +17,8 @@ function libox.normal_sandbox(def)
     setfenv(f, env)
 
     if rawget(_G, "jit") then
-        jit.off(f, true) -- turn jit off for that function and yes this is needed or the user can repeat until false, sorry
+        jit.off(f, true)
+        -- turn jit off for that function and yes this is needed or the user can `repeat until false`, sorry
     end
 
 

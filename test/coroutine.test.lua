@@ -45,7 +45,8 @@ until false
             env = {
                 string = {
                     rep = string.rep,
-                    -- Never let the user get arbitrary string.rep, or the user can create terabytes of strings... we are giving it to the user here for testing
+                    -- Never let the user get arbitrary string.rep, or the user can create terabytes of strings...
+                    -- we are giving it to the user here for testing
                 },
             },
             size_limit = 1000
@@ -67,7 +68,9 @@ until false
             local e = _G -- Hehe i am an unsuspecting user and i am sure this won't be a mistake
             coroutine.yield()
         ]],
-            -- When having _G as the environment, it simply stack overflows? this is like... bad... yeah
+            -- When having _G as the environment
+            -- it simply stack overflows? this is like... bad... yeah
+            -- old comment, i fixed that actually, see down
             env = env,
             size_limit = 1000,
             time_limit = 1000000 -- 1 million microseconds, can you imagine that (that's definitely not 1 second)
@@ -81,21 +84,20 @@ until false
     it("Limits local variables", function(assert)
         --[[
         IMPORTANT: This fails when there is no access to debug.getlocal
-    ]]
+        ]]
 
         local sandbox = libox.coroutine.create_sandbox({
             code = "local a = string.rep('a',1000); coroutine.yield(); coroutine.yield()",
             env = {
                 string = {
                     rep = string.rep,
-                    -- Never let the user get arbitrary string.rep, we are giving it to the user here for testing
                 },
                 coroutine = {
                     yield = coroutine.yield
                 },
             },
             size_limit = 1000,
-            time_limit = 1000000 -- 1 million microseconds, can you imagine that (that's definitely not 1 second)
+            time_limit = 1000000,
 
         })
         local _, errmsg = libox.coroutine.run_sandbox(sandbox)
@@ -104,8 +106,8 @@ until false
 
     it("Really limits local variables...", function(assert)
         --[[
-        IMPORTANT: This fails when there is no access to debug.getlocal
-    ]]
+            This fails when there is no access to debug.getlocal
+        ]]
 
         local sandbox = libox.coroutine.create_sandbox({
             code = [[
@@ -120,14 +122,13 @@ until false
             env = {
                 string = {
                     rep = string.rep,
-                    -- Never let the user get arbitrary string.rep, we are giving it to the user here for testing
                 },
                 coroutine = {
                     yield = coroutine.yield
                 },
             },
             size_limit = 1000,
-            time_limit = 1000000 -- 1 million microseconds, can you imagine that (that's definitely not 1 second)
+            time_limit = 1000000
 
         })
         local _, errmsg = libox.coroutine.run_sandbox(sandbox)
@@ -152,14 +153,13 @@ until false
             env = {
                 string = {
                     rep = string.rep,
-                    -- Never let the user get arbitrary string.rep, we are giving it to the user here for testing
                 },
                 coroutine = {
                     yield = coroutine.yield
                 },
             },
             size_limit = 1000,
-            time_limit = 1000000 -- 1 million microseconds, can you imagine that (that's definitely not 1 second)
+            time_limit = 1000000
 
         })
         local _, errmsg = libox.coroutine.run_sandbox(sandbox)
@@ -175,14 +175,13 @@ until false
 
             local sandbox = libox.coroutine.create_sandbox({
                 code = [[
-            local e = _G -- Hehe i am an unsuspecting user not aware of this sandboxing software's implementation and i am sure this won't be a problem
+            local e = _G
             coroutine.yield()
         ]],
-                -- yeah
+                -- yeah, it used to stack overflow but now with a minor rewrite it doesn't
                 env = _G,
                 size_limit = 1000,
-                time_limit = 1000000 -- 1 million microseconds, can you imagine that (that's definitely not 1 second)
-
+                time_limit = 1000000
             })
 
             local t1 = minetest.get_us_time()

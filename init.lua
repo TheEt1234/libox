@@ -14,12 +14,12 @@ If you don't use coroutine sandboxes, feel free to ignore this warning
 Libox can also reuse debug.getlocal and getupvalue if it is already avaliable in the environment
 ========== ATTENTION END ==========
         ]])
-elseif debug.getlocal == nil or debug.getupvalue == nil and ie ~= nil then
+elseif debug.getlocal == nil or debug.getupvalue == nil and ie ~= nil then -- luacheck:ignore
     debug.getlocal = ie.debug.getlocal
     debug.getupvalue = ie.debug.getupvalue
 end
 
-ie = nil
+ie = nil -- luacheck: ignore
 
 local MP = minetest.get_modpath(minetest.get_current_modname())
 dofile(MP .. "/main.lua")
