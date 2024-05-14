@@ -167,7 +167,7 @@ until false
     end)
 
     it(
-        "Time to weigh _G (warn: unstable? theres a lot of crap in _G for sure; also warn: you should execute it twice to be 100% sure)",
+        "Weighing _G",
         function(_, _, _, custom)
             local env = libox.create_basic_environment()
             libox.coroutine.get_size(env, {}, coroutine.create(function() end))
