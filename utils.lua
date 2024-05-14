@@ -10,6 +10,8 @@ function libox.get_default_hook(max_time)
     end
 end
 
+-- luacheck: push ignore
+
 --[[
     PATH SHORTENING: from dbg
     Path shortening is licensed under the MIT license:
@@ -26,6 +28,8 @@ end
     FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
     WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ]]
+
+-- luacheck: pop ignore
 
 local modpath_trie = {}
 for _, modname in pairs(minetest.get_modnames()) do
