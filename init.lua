@@ -14,7 +14,8 @@ If you don't use coroutine sandboxes, feel free to ignore this warning
 Libox can also reuse debug.getlocal and getupvalue if it is already avaliable in the environment
 ========== ATTENTION END ==========
         ]])
-elseif debug.getlocal == nil or debug.getupvalue == nil and ie ~= nil then -- luacheck:ignore
+elseif debug.getlocal == nil or debug.getupvalue == nil and ie ~= nil then
+    -- luacheck:ignore
     debug.getlocal = ie.debug.getlocal
     debug.getupvalue = ie.debug.getupvalue
 end

@@ -274,8 +274,10 @@ function api.run_sandbox(ID, value_passed)
         debug.sethook(thread, sandbox.in_hook(), "", sandbox.hook_time)
         getmetatable("").__index = sandbox.env.string
         ok, errmsg_or_value = coroutine.resume(thread, value_passed)
-    end) -- in rare cases this is actually nessesary, in all other cases coroutine.resume works perfectly fine to catch the error
-
+    end)
+    -- in rare cases this is actually nessesary,
+    -- in all other cases coroutine.resume works perfectly fine to catch the error
+    -- actually i dont really know if its that nessesary...
     debug.sethook(thread)
     getmetatable("").__index = string
 

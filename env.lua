@@ -16,7 +16,7 @@ end
 
 function libox.safe.PcgRandom(seed, seq)
     if seq and #seq > 1000 then error("Sequence too large, size limit is 1000", 2) end
-    local pcg = PcgRandom(seed, sequence)
+    local pcg = PcgRandom(seed, seq)
 
     -- now make the interface
     local interface = {
@@ -189,7 +189,9 @@ function libox.create_basic_environment()
         shuffle = table.shuffle,
         -- luajit helpers
         move = table.move,
-        -- deperecated stuff lol, no code should rely on this but whatever, i like foreach for the same reason i like vector:apply
+
+        -- deperecated stuff lol, i wonder...
+        -- is it deplicated in luajit or just lua....
         foreach = table.foreach,
         foreachi = table.foreachi,
     }

@@ -46,7 +46,7 @@ end
 local TRACEBACK_LIMIT = 20
 
 function libox.traceback(errmsg)
-    local errmsg = tostring(errmsg) or ""
+    errmsg = tostring(errmsg) or ""
 
     local traceback = "Traceback: " .. "\n"
     local level = 1
@@ -79,7 +79,7 @@ function libox.digiline_sanitize(input, allow_functions, wrap)
 			3) wrap: function, the function that wraps around the functions in this table
 	]]
 
-    local wrap = wrap or function(f) return f end
+    wrap = wrap or function(f) return f end
     local function clean_and_weigh_digiline_message(msg, back_references)
         local t = type(msg)
         if t == "string" then
