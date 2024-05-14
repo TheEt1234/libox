@@ -8,12 +8,23 @@ See [api.md](https://github.com/TheEt1234/libox/blob/master/api.md) for document
 
 See [env_docs.md](https://github.com/TheEt1234/libox/blob/master/env_docs.md) for documentation of the sandbox environment
 
+# Notice!
+
+Libox (optionally) requires insecure environment to weigh local variables and upvalues in the coroutine sandbox. **Without this someone can overfill your memory with local variables/upvalues**  
+***the libox mod will expose debug.getlocal and debug.getupvalue to all mods***
+
+# Security
+
+- Fixes mesecons issue #516 by limiting based on time not instructions
+- May introduce new bugs, only time can test that
+- Some of the responsibility is also on the mods that use libox as well (such as not doing something dumb like calling functions straight from the environment), the purpose of libox should be to also handle some of the more common stuff 
+
 # Optional dependancies
 dbg - not actually used for debugging, just used to provide `dbg.shorten_path`, if unavaliable it will fallback to the copied implementation
 
 # License
-Code (unless mentioned somewhere differently) - LGPLv3  
+Code (unless mentioned somewhere differently) - LGPLv3-only
 Inspiration: [Luacontrollers](https://github.com/minetest-mods/mesecons/tree/master/mesecons_luacontroller)  
-libox.traceback's shortened paths: [The minetest dbg mod's shorten_path.lua](https://github.com/appgurueu/dbg/blob/master/src/shorten_path.lua) - MIT licensed  
-pat.lua: [source](https://notabug.org/pgimeno/patlua/src/master/pat.lua) [the mesecon issue](https://github.com/minetest-mods/mesecons/issues/456) - MIT licensed  
+`libox.traceback`'s shortened paths: [The minetest dbg mod's shorten_path.lua](https://github.com/appgurueu/dbg/blob/master/src/shorten_path.lua) - MIT licensed  
+`pat.lua`: [source](https://notabug.org/pgimeno/patlua/src/master/pat.lua) [the mesecon issue](https://github.com/minetest-mods/mesecons/issues/456) - MIT licensed  
 `github/workflows/luacheck.yml` - from mt-mods, [original source here ](https://github.com/mt-mods/mt-mods/blob/master/snippets/luacheck.yml) - MIT licensed
