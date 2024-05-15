@@ -31,11 +31,69 @@ function libox.safe.PcgRandom(seed, seq)
     return interface
 end
 
-function libox.safe.PerlinNoise(...)
-    local core = PerlinNoise(...)
+function libox.safe.PerlinNoise(noiseparams)
+    if type(noiseparams) ~= "table" then
+        error("noiseparams aren't a table, the deprecated syntax is unsupported btw")
+        return
+    end
+    if type(noiseparams.offset) ~= "number" then
+        error("invalid type: offset")
+        return
+    end
+    if type(noiseparams.scale) ~= "number" then
+        error("invalid type: scale")
+        return
+    end
+
+    local spread = noiseparams.spread
+
+    if type(spread) ~= "table" then
+        error("invalid type: spread, not a table")
+        return
+    end
+
+    if spread.x == nil or spread.y == nil or spread.z == nil then
+        error("invalid type: spread, not a vector")
+        return
+    end
+
+    if type(noiseparams.seed) ~= "number" then
+        error("invalid type: seed")
+        return
+    end
+    if type(noiseparams.octaves) ~= "number" then
+        error("invalid type: octaves")
+        return
+    end
+
+    if noiseparams.persistence then
+        if type(noiseparams.persistence) ~= "number" then
+            error("invalid type: persistence")
+            return
+        end
+    elseif noiseparams.persist then
+        if type(noiseparams.persist) ~= "number" then
+            error("Invalid type: persist")
+            return
+        end
+    else
+        error("No persistence")
+        return
+    end
+
+    if type(noiseparams.lacunarity) ~= "number" then
+        error("invalid type: lacunarity, not a vector")
+        return
+    end
+
+    if noiseparams.flags and type(noiseparams.flags) ~= "table" then
+        error("invalid type: flags")
+        return
+    end
+    local core = PerlinNoise(noiseparams)
     local interface = {
-        get_2d = wrap(core, core.get_2d),
-        get_3d = wrap(core, core.get_3d)
+        get_2d = wrap(core.get_2d, core),
+        get_3d = wrap(core.get_3d, core)
     }
     return interface
 end
