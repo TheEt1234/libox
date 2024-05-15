@@ -215,7 +215,8 @@ until false
         local response = "\n"
 
         response = response ..
-            "Size of environment: " .. libox.coroutine.get_size(env, {}, coroutine.create(function() end), false) .. "\n"
+            "Size of environment: "
+            .. libox.coroutine.get_size(env, {}, coroutine.create(function() end), false) .. "\n"
         response = response .. "Number of sandboxes that will get created:" .. num .. "\n"
         response = response .. "Activation treshold (number of sandboxes):" .. activation_treshold .. "\n"
         response = response .. "Activation treshold (time, faked):" .. fake_time_treshold .. "s \n"
