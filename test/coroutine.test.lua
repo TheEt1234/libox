@@ -205,4 +205,68 @@ until false
         libox.coroutine.run_sandbox(sandbox)
         assert(libox.coroutine.is_sandbox_dead(sandbox))
     end)
+    it("Can collect garbage", function(_, _, _, custom)
+        local sandboxes = {}
+        local num = 50
+        local activation_treshold = 10
+        local env = libox.create_basic_environment()
+        local fake_time_treshold = 50
+
+        local response = "\n"
+
+        response = response ..
+            "Size of environment: " .. libox.coroutine.get_size(env, {}, coroutine.create(function() end), false) .. "\n"
+        response = response .. "Number of sandboxes that will get created:" .. num .. "\n"
+        response = response .. "Activation treshold (number of sandboxes):" .. activation_treshold .. "\n"
+        response = response .. "Activation treshold (time, faked):" .. fake_time_treshold .. "s \n"
+
+        local active = libox.coroutine.active_sandboxes
+
+        local function map_bool(n)
+            if n == 1 then return true else return false end
+        end
+        local function funny_if(c, t, f)
+            if c then return t else return f end
+        end
+
+        for i = 1, num do
+            sandboxes[i] = libox.coroutine.create_sandbox({
+                code = "coroutine.yield()",
+                env = env,
+                size_limit = 10000,
+                time_limit = 10000,
+                is_garbage_collected = map_bool(math.random(0, 1))
+            })
+
+            local actual_sandbox = active[sandboxes[i]]
+            actual_sandbox.last_ran = funny_if(math.random() < 0.5, 0, os.clock())
+        end
+
+
+        local function dumbcount(t)
+            local count = 0
+            for _ in pairs(t) do count = count + 1 end
+            return count
+        end
+
+        response = response .. "number of sandboxes currently: " .. dumbcount(active) .. "\n"
+
+        local original_settings = table.copy(libox.coroutine.settings)
+
+        libox.coroutine.settings.gc.time_treshold = fake_time_treshold
+        libox.coroutine.settings.gc.number_of_sandboxes = activation_treshold
+
+        libox.coroutine.garbage_collect()
+
+        libox.coroutine.settings = original_settings
+
+        response = response ..
+            "number of sandboxes after collection (it should remain high because the chance is random): " ..
+            dumbcount(active) .. "\n"
+
+
+        libox.coroutine.active_sandboxes = {}
+        response = response .. "Cleared the mess"
+        custom(response)
+    end)
 end, true)

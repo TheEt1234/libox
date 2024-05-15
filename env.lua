@@ -254,6 +254,6 @@ function libox.create_basic_environment()
         gmatch = wrap(libox.pat.gmatch, libox.pat),
     }
 
-    libox.supply_additional_environment(env)
+    libox.supply_additional_environment(env) -- for mods to use
     return env
 end

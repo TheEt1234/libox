@@ -270,7 +270,7 @@ function api.run_sandbox(ID, value_passed)
 
     local ok, errmsg_or_value
 
-    local pcall_ok = pcall(function()
+    local pcall_ok, pcall_errmsg = pcall(function()
         debug.sethook(thread, sandbox.in_hook(), "", sandbox.hook_time)
         getmetatable("").__index = sandbox.env.string
         ok, errmsg_or_value = coroutine.resume(thread, value_passed)
@@ -284,8 +284,8 @@ function api.run_sandbox(ID, value_passed)
     local size_check = api.size_check(sandbox.env, sandbox.size_limit, thread)
     if not size_check then return false, "Out of memory!" end
 
-    if not pcall_ok then -- idk how this happens lmao
-        return false, "Something very weird happened, most likely timed out."
+    if not pcall_ok then
+        return false, pcall_errmsg
     end
 
     if not ok then
@@ -299,23 +299,24 @@ function api.garbage_collect()
     local number_of_sandboxes = 0
     local to_be_collected = {}
     local current_time = os.clock()
-    for k, v in pairs(active_sandboxes) do
-        if not v.is_garbage_collected then return end
-        number_of_sandboxes = number_of_sandboxes + 1
 
-        local difftime = current_time - v.last_ran
-        if difftime > api.settings.gc.time_treshold then
-            to_be_collected[#to_be_collected + 1] = k
+    for k, v in pairs(active_sandboxes) do
+        if v.is_garbage_collected then
+            number_of_sandboxes = number_of_sandboxes + 1
+
+            local difftime = current_time - v.last_ran
+            if difftime > api.settings.gc.time_treshold then
+                to_be_collected[#to_be_collected + 1] = k
+            end
         end
     end
 
-    if number_of_sandboxes < api.settings.gc.number_of_sandboxes then return false, 0 end
+    if number_of_sandboxes < api.settings.gc.number_of_sandboxes then return false end
     for i = 1, #to_be_collected do
         active_sandboxes[to_be_collected[i]] = nil
     end
 
-    local size = collectgarbage("collect")
-    return #to_be_collected, size
+    return #to_be_collected
 end
 
 -- export
@@ -328,8 +329,6 @@ local function start_timer()
         start_timer()
     end)
 end
-if api.settings.gc.auto and minetest.after then
-    -- if minetest.after doesn't exist then that means we are on async environment
-    -- we don't collect garbage there then, i mean like... yeah
+if api.settings.gc.auto then
     start_timer()
 end
