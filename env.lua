@@ -1,6 +1,8 @@
 local BYTECODE_CHAR = 27
 
 
+
+
 local function wrap(f, obj)
     return function(...)
         return f(obj, ...)
@@ -52,9 +54,8 @@ function libox.safe.PerlinNoise(noiseparams)
         return
     end
 
-    if spread.x == nil or spread.y == nil or spread.z == nil then
-        error("invalid type: spread, not a vector")
-        return
+    if not vector.check(spread) then
+        error("spread is not a vector")
     end
 
     if type(noiseparams.seed) ~= "number" then
@@ -82,7 +83,7 @@ function libox.safe.PerlinNoise(noiseparams)
     end
 
     if type(noiseparams.lacunarity) ~= "number" then
-        error("invalid type: lacunarity, not a vector")
+        error("invalid type: lacunarity")
         return
     end
 
@@ -90,6 +91,7 @@ function libox.safe.PerlinNoise(noiseparams)
         error("invalid type: flags")
         return
     end
+
     local core = PerlinNoise(noiseparams)
     local interface = {
         get_2d = wrap(core.get_2d, core),
