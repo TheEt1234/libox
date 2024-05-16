@@ -41,7 +41,6 @@
 - maxn = unchanged
 - remove = unchanged
 - sort = unchanged
-- -- minetest helpers:
 - indexof = unchanged, from minetest
 - copy = unchanged, from minetest
 - insert_all = unchanged, from minetest
@@ -93,8 +92,8 @@
 - Pure lua implementations of functions `find`, `match`, `gmatch`, and they support patterns
 # extra environment stuffs (*) mostly from minetest
 - `dump` `dump2` = unchanged
-- PcgRandom = you are given an interface, where `rand_normal_dist` has limited amount of tries and you call the functions by doing `my_random.func` not `my_random:func`
-- PerlinNoise = Changed to give an interface, call it like `my_perlin.func` not `my_perlin:func`
+- `PcgRandom` = you are given an interface, where `rand_normal_dist` has limited amount of tries and you call the functions by doing `my_random.func` not `my_random:func`
+- `PerlinNoise` = Changed to give an interface, call it like `my_perlin.func` not `my_perlin:func`, also the types in the noiseparams are strict, if it detects a type mismatch it will give you 2 values: `false` and a string, that string being the faulty element (its shallow)
 
 # notes to mod devs
 - Don't be afraid to use userdata, but be afraid where it can get to, it should not be serialized, never.

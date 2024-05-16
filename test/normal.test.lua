@@ -117,4 +117,102 @@ libox.test.describe("Normal sandbox (tests the environment)", function(it)
             env = libox.create_basic_environment()
         }))
     end)
+
+    it("Can check types (basic)", function(assert)
+        local type_string = function(x) return type(x) == "string" end
+        local result1 = libox.type_check({
+            a = "lol",
+            b = {
+                c = "lol"
+            }
+        }, {
+            a = type_string,
+            b = {
+                c = type_string
+            }
+        }) == true
+
+        local result2 = libox.type_check({
+            a = "lol",
+            b = {
+                c = "lol",
+                d = "funny (i am not supposed to be here)",
+            }
+        }, {
+            a = type_string,
+            b = {
+                c = type_string
+            }
+        }) == false
+
+        local result3 = libox.type_check({
+            a = "fine",
+            b = "fine also",
+            c = ItemStack(""), -- not fine
+            d = {}
+        }, {
+            a = type_string,
+            b = type_string,
+            c = type_string,
+            d = type_string,
+        }) == false
+
+        local result4 = libox.type_check("moo", type_string) == true
+        local result5 = libox.type_check("b", {
+            a = type_string
+        }) == false
+
+        local result6 = libox.type_check({
+            a = ItemStack("")
+        }, {
+            a = type_string,
+        }) == false
+
+        assert(result1 and result2 and result3 and result4 and result5 and result6)
+    end)
+    it("Can check types (advanced)", function(assert)
+        local table = {
+            f = function() end
+        }
+        table["k"] = table
+        assert(not libox.type_check(table, {
+            f = function(x) return type(x) == "function" end,
+            k = {
+                x = function(x) return "lol" end
+            }
+        }))
+    end)
+
+    it("Can do userdata securely - PerlinNoise", function(assert)
+        local perlin = libox.sandbox_lib_f(libox.safe.PerlinNoise)
+        debug.sethook(function() end, "", 1000) -- make it so sandbox_lib_f wont get mad
+        local result1 = perlin({
+            offset = 0,
+            scale = 1,
+            spread = { x = 384, y = 192, z = 384 },
+            seed = 5900033,
+            octaves = 5,
+            persist = 0.63,
+            lacunarity = 2.0,
+            --flags = ""
+        }) ~= false
+        local result2 = perlin({}) == false
+        local result3 = perlin({
+            offset = 0,
+            scale = 1,
+            spread = { x = 384, y = 192, z = 384 },
+            seed = 5900033,
+            octaves = 50,
+            persist = 0.63,
+            lacunarity = 50.0,
+            --flags = ""
+        }) ~= false
+        --[[
+            So, about octaves/lacunarity
+            when i make those values huge, nothing really seems to happen other than timeout
+            i think its fine tbh
+        ]]
+        debug.sethook()
+        assert(result1 and result2 and result3)
+    end)
 end)

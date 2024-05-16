@@ -29,6 +29,7 @@ local function core(test)
 
     test[2](get_assert(test[1]), get_success(test[1]), get_failure(test[1]), get_custom(test[1]))
 end
+
 function api.run_known_test(test)
     if not test.ignore_async then
         minetest.handle_async(core, function() end, test)

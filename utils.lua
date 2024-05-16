@@ -210,3 +210,58 @@ function libox.sandbox_lib_f(f, opt_str_limit)
 end
 
 libox.safe_traceback = libox.sandbox_lib_f(libox.safe_traceback) -- make it work
+
+
+-- strict type checking
+--[[
+    thing: any
+    type_check: {
+        key = function | table
+    } | function
+    note: recursive
+    returns: boolean
+
+]]
+function libox.type_check(initial_thing, initial_check)
+    local function internal(thing, check, seen)
+        if seen[thing] == true then return true end
+        if type(check) == "function" then
+            seen[thing] = true
+            return check(thing)
+        end
+
+        for k, v in pairs(check) do
+            if not thing[k] then
+                if v(nil) == false then return false, k end
+            elseif type(v) == "table" then
+                if (internal(thing[k], v, seen)) == false then return false, k end
+                seen[thing[k]] = true
+            elseif type(v) == "function" then
+                if v(thing[k]) == false then return false, k end
+                seen[thing[k]] = true
+            else -- bad, just return false
+                return false, "invalid params to initial_check probably"
+            end
+        end
+        for k, _ in pairs(thing) do
+            if check[k] == nil then return false, "un-needed: " .. k end
+        end
+        return true
+    end
+    return internal(initial_thing, initial_check, {})
+end
+
+function libox.type(x)
+    return function(something)
+        return type(something) == x
+    end
+end
+
+function libox.type_vector(vec)
+    if type(vec) ~= "table" then return false end
+
+    if type(vec.x) ~= "number" then return false end
+    if type(vec.y) ~= "number" then return false end
+    if type(vec.z) ~= "number" then return false end
+    return true
+end

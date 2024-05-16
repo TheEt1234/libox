@@ -24,6 +24,28 @@
 
 `libox.sandbox_lib_f(f, ...)` - use this if you want to escape the string sandbox (do this if you are not 100% sure that your code is free of `"":this_stuff()`) **don't use this on functions that run user functions**
 
+`libox.type_check(thing, check)`
+- `thing` = untrusted data
+- `check` a function or a table with the following format:
+```lua
+    {
+        something = function(value) return true end,
+        a_table = {
+            other_key = libox.type("number"),
+            x = libox.type_vector, -- this is how type_vector is supposed to be used, don't do libox.type_vector() in this case
+        }
+    }
+```
+- runs a series of checks on the `thing` using the check table
+- if the `thing` table contains an extra property, not defined in the `check` table, it will return false too
+- if the `thing` table lacks a property in the `check` table, it will return false
+- returns a boolean, and a string (success, faulty element)
+
+`libox.type(type)` - returns a function that checks a type
+- for example, when given `"number"`, it returns a function: `function(x) return type(x) == "number" end`
+
+`libox.type_vector(x)` - is a function that checks if `x` is a vector, use `vector.check` if you want to also check the vector metatable
+
 `libox.shorten_path(path)` - use this to shorten a path, it will convert `/home/user/blabla/.minetest/modname/x.lua` into `modname:x.lua` - if the `dbg` mod is avaliable, it will simply use `dbg.shorten_path`
 ## Environment
 `libox.create_basic_environment()` - get a basic secure environment already set up for you

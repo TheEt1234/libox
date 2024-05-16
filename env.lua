@@ -34,62 +34,29 @@ function libox.safe.PcgRandom(seed, seq)
 end
 
 function libox.safe.PerlinNoise(noiseparams)
-    if type(noiseparams) ~= "table" then
-        error("noiseparams aren't a table, the deprecated syntax is unsupported btw")
-        return
-    end
-    if type(noiseparams.offset) ~= "number" then
-        error("invalid type: offset")
-        return
-    end
-    if type(noiseparams.scale) ~= "number" then
-        error("invalid type: scale")
-        return
-    end
+    if type(noiseparams) ~= "table" then return false, "noiseparams is a table, deprecated syntax is not supported." end
 
-    local spread = noiseparams.spread
+    noiseparams.persistence = noiseparams.persistence or noiseparams.persist
+    noiseparams.persist = nil
+    local check, element = libox.type_check(noiseparams, {
+        offset = libox.type("number"),
+        scale = libox.type("number"),
+        spread = libox.type_vector,
+        seed = libox.type("number"),
+        octaves = libox.type("number"),
+        persistence = libox.type("number"),
+        lacunarity = libox.type("number"),
+        flags = function(x)
+            if x ~= nil then
+                return type(x) == "string"
+            else
+                return true
+            end
+        end,
 
-    if type(spread) ~= "table" then
-        error("invalid type: spread, not a table")
-        return
-    end
-
-    if not vector.check(spread) then
-        error("spread is not a vector")
-    end
-
-    if type(noiseparams.seed) ~= "number" then
-        error("invalid type: seed")
-        return
-    end
-    if type(noiseparams.octaves) ~= "number" then
-        error("invalid type: octaves")
-        return
-    end
-
-    if noiseparams.persistence then
-        if type(noiseparams.persistence) ~= "number" then
-            error("invalid type: persistence")
-            return
-        end
-    elseif noiseparams.persist then
-        if type(noiseparams.persist) ~= "number" then
-            error("Invalid type: persist")
-            return
-        end
-    else
-        error("No persistence")
-        return
-    end
-
-    if type(noiseparams.lacunarity) ~= "number" then
-        error("invalid type: lacunarity")
-        return
-    end
-
-    if noiseparams.flags and type(noiseparams.flags) ~= "table" then
-        error("invalid type: flags")
-        return
+    })
+    if not check then
+        return false, element
     end
 
     local core = PerlinNoise(noiseparams)
@@ -307,8 +274,8 @@ function libox.create_basic_environment()
 
     -- oh yeah who could forget...
     -- some random minetest stuffs
-    env.PcgRandom = libox.safe.PcgRandom
-    env.PerlinNoise = libox.safe.PerlinNoise
+    env.PcgRandom = libox.sandbox_lib_f(libox.safe.PcgRandom)
+    env.PerlinNoise = libox.sandbox_lib_f(libox.safe.PerlinNoise)
 
     env.traceback = libox.traceback
     env.pat = {
