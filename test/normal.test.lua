@@ -178,7 +178,7 @@ libox.test.describe("Normal sandbox (tests the environment)", function(it)
         assert(not libox.type_check(table, {
             f = function(x) return type(x) == "function" end,
             k = {
-                x = function(x) return "lol" end
+                x = function(_) return "lol" end
             }
         }))
     end)
