@@ -32,4 +32,6 @@ Code (unless mentioned somewhere differently) - LGPLv3
 
 `github/workflows/luacheck.yml` - from mt-mods, [original source here ](https://github.com/mt-mods/mt-mods/blob/master/snippets/luacheck.yml) - MIT licensed
 
+`os.date` in the environment - from mooncontroller [original repo here](https://github.com/mt-mods/mooncontroller)
+
 Inspiration: [Luacontrollers](https://github.com/minetest-mods/mesecons/tree/master/mesecons_luacontroller)  

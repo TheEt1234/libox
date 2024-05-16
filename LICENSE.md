@@ -5,6 +5,7 @@ github/workflows/luacheck.yml is licensed under the MIT license, see the file fo
 
 path shortening is in utils.lua, licensed under the MIT license, see utils.lua for the license itself
 
+os.date is in env.lua, the code for that was made by OgelGames, licensed under LGPLv3 (see below for the copy of the lgplv3 license)
 
 The LGPLv3 applies to all code (unless a different license is mentioned) in this project.
 

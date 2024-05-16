@@ -147,11 +147,14 @@ function libox.safe.get_loadstring(env) -- chunkname is ignored
     end
 end
 
+--[[
+    safe_date is from the mooncontroller mod
+    licensed under LGPLv3, by OgelGames
+]]
 -- Wraps os.date to only replace valid formats,
 -- ignoring invalid ones that would cause a hard crash.
 local TIME_MAX = 32535244800 -- 01/01/3001
 -- todo: change on 01/01/3001
--- this is from mooncontroller btw
 local function safe_date(str, time)
     if type(time) ~= "number" then
         time = os.time()
