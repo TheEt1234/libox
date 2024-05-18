@@ -45,7 +45,7 @@ function libox.safe.PerlinNoise(noiseparams)
         seed = libox.type("number"),
         octaves = libox.type("number"),
         persistence = libox.type("number"),
-        lacunarity = libox.type("number"),
+        lacunaristy = libox.type("number"),
         flags = function(x)
             if x ~= nil then
                 return type(x) == "string"
@@ -150,6 +150,7 @@ end
 function libox.create_basic_environment()
     --[[
         get the safest, least strict lua environment
+        *for the "normal" sandbox, when using the "coroutine" sandbox you will need to add coroutine.yield, and optionally coroutine.create, coroutine.resume
     ]]
 
     -- INCLUDES: basic lib (minus coroutine, add that yourself if you need to), string, table, math, bit, os
