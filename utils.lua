@@ -1,9 +1,9 @@
 function libox.get_default_hook(max_time)
     local time = minetest.get_us_time
 
-    local current_time = time()
+    local start_time = time()
     return function()
-        if time() - current_time > max_time then
+        if time() - start_time > max_time then
             debug.sethook()
             error("Code timed out! Reason: Time limit exceeded, the limit:" .. tostring(max_time / 1000) .. "ms", 2)
         end
