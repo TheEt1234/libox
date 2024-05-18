@@ -168,10 +168,8 @@ function libox.create_basic_environment()
         pcall = libox.safe.pcall,
         xpcall = libox.safe.xpcall,
         select = select,
-        unpack = function(t, a, b)
-            if not b or b < 2 ^ 30 then
-                b = 2 ^ 29 -- whatever lmao
-            end
+        unpack = function(t, a, b) -- from mooncontroller
+            assert(not b or b < 2 ^ 30)
             return unpack(t, a, b)
         end,
 

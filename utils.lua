@@ -93,7 +93,7 @@ end
 function libox.digiline_sanitize(input, allow_functions, wrap)
     --[[
 		Parameters:
-			1) input: the table that you are going to send (doesnt need to be a table tho)
+			1) input: the thing
 			2) allow_functions: true/false, explains itself
 			3) wrap: function, the function that wraps around the functions in this table
 	]]
