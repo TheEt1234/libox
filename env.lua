@@ -150,7 +150,8 @@ end
 function libox.create_basic_environment()
     --[[
         get the safest, least strict lua environment
-        *for the "normal" sandbox, when using the "coroutine" sandbox you will need to add coroutine.yield, and optionally coroutine.create, coroutine.resume
+        *for the "normal" sandbox, when using the "coroutine" sandbox you will need to add coroutine.yield
+
     ]]
 
     -- INCLUDES: basic lib (minus coroutine, add that yourself if you need to), string, table, math, bit, os
