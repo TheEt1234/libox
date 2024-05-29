@@ -1,7 +1,6 @@
 local active_sandboxes = {}
 local api = {}
 
-local gigabyte = 1024 * 1024 * 1024
 
 api.settings = {
     memory_treshold = 5,
@@ -51,28 +50,6 @@ local function rand_text(n)
 end
 
 
-local real_mem_treshold = gigabyte * api.settings.memory_treshold
-function api.get_default_hook(max_time)
-    -- Why seperate from the libox util function?
-    -- because of the critical memory treshold
-    -- TODO: eventually put this in the default libox hook
-
-    return function()
-        local time = minetest.get_us_time
-
-        local current_time = time()
-        return function()
-            if time() - current_time > max_time then
-                debug.sethook()
-                error("Code timed out! Reason: Time limit exceeded, the limit:" .. tostring(max_time / 1000) .. "ms", 2)
-            elseif collectgarbage("count") >= real_mem_treshold then
-                debug.sethook()
-                collectgarbage("collect")
-                error("Lua memory usage reached critical treshold, sorry... aborting", 2)
-            end
-        end
-    end
-end
 
 function api.create_sandbox(def)
     local ID = def.ID or rand_text(10)
@@ -80,10 +57,10 @@ function api.create_sandbox(def)
         code = def.code,
         is_garbage_collected = def.is_garbage_collected or true,
         env = def.env or {},
-        in_hook = def.in_hook or api.get_default_hook(def.time_limit or 3000),
-        --error_handler = def.error_handler or libox.traceback, -- we can't do this
+        in_hook = def.in_hook or libox.get_default_hook(def.time_limit or 3000),
+        function_wrap = def.function_wrap or function(f) return f end,
         last_ran = os.clock(),                         -- for gc and logging
-        hook_time = def.hook_time or 10,
+        hook_time = def.hook_time or 50,
         size_limit = def.size_limit or 1024 * 1024 * 5 -- 5 megabytes... wow
     }
     return ID
@@ -100,6 +77,7 @@ function api.create_thread(sandbox)
         return false, msg
     end
 
+
     setfenv(f, sandbox.env)
 
     if rawget(_G, "jit") then
@@ -107,6 +85,7 @@ function api.create_thread(sandbox)
         -- turn jit off for that function and yes this is needed or the user can repeat until false, sorry
     end
 
+    f = sandbox.function_wrap(f)
     sandbox.thread = coroutine.create(f)
     return true
 end
@@ -271,7 +250,7 @@ function api.run_sandbox(ID, value_passed)
     local ok, errmsg_or_value
 
     local pcall_ok, pcall_errmsg = pcall(function()
-        debug.sethook(thread, sandbox.in_hook(), "", sandbox.hook_time)
+        debug.sethook(thread, sandbox.in_hook(), "", sandbox.hook_time or 50)
         getmetatable("").__index = sandbox.env.string
         ok, errmsg_or_value = coroutine.resume(thread, value_passed)
     end)

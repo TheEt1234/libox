@@ -226,6 +226,7 @@ function libox.create_basic_environment()
         foreachi = table.foreachi,
     }
 
+
     env.math = {}
     for _, v in ipairs({
         "abs", "acos", "asin", "atan", "atan2", "ceil", "cos", "cosh", "deg", "exp", "floor",

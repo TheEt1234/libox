@@ -58,18 +58,14 @@
 
 `libox.normal_sandbox(def)`
 - A sandbox that executes lua code securely based on parameters in `def` (table)
-
-`def.code` - the code...
-
-`def.env` - The environment of the function
-
-`def.error_handler` - A function inside the `xpcall`, by default `libox.traceback`
-
-`def.in_hook` - The hook function, by default `libox.get_default_hook(def.max_time)`
-
-`def.max_time` - Maximum allowed execution time, in microseconds, only used if `def.in_hook` was not defined
-
-`def.hook_time` - The hook function will execute every `def.hook_time` instructions
+### The def table
+`def.code` - the code...  
+`def.env` - The environment of the function  
+`def.error_handler` - A function inside the `xpcall`, by default `libox.traceback`  
+`def.in_hook` - The hook function, by default `libox.get_default_hook(def.max_time)`  
+`def.max_time` - Maximum allowed execution time, in microseconds, only used if `def.in_hook` was not defined  
+`def.hook_time` - The hook function will execute every `def.hook_time` instructions, by default 50
+`def.function_wrap` - transforms a function, by default `function(f) return f end`
 
 ## "Coroutine" sandbox
 - Optionally requires trusted environment for weighing local variables and upvalues
@@ -109,6 +105,8 @@ All of theese are configurable by the user
 - `last_ran` - not set by you, but is the last time the sandbox was ran, used for garbage collection
 - `def.hook_time` - The hook function will execute every `def.hook_time` instructions, by default 10
 - `def.size_limit` - in *bytes*, the size limit of the sandbox, if trusted then upvalues and local variables are counted in too, by default 5 *megabytes*, aka `1024*1024*5` bytes
+- `def.function_wrap` - transforms a function, by default `function(f) return f end`
+
 
 `libox.coroutine.run_sandbox(ID, value_passed)`
 - `value_passed` - the value passed to the coroutine.resume function, so that in the sandbox it could: `local vals = coroutine.yield("blabla")`
