@@ -57,7 +57,7 @@ function api.create_sandbox(def)
         code = def.code,
         is_garbage_collected = def.is_garbage_collected or true,
         env = def.env or {},
-        in_hook = def.in_hook or libox.get_default_hook(def.time_limit or 3000),
+        in_hook = def.in_hook or libox.coroutine.get_default_hook(def.time_limit or 3000),
         function_wrap = def.function_wrap or function(f) return f end,
         last_ran = os.clock(),                         -- for gc and logging
         hook_time = def.hook_time or 50,
@@ -227,6 +227,22 @@ function api.size_check(env, lim, thread)
     return size < lim
 end
 
+function api.get_default_hook(max_time) -- im sorry
+    return function()
+        local time = minetest.get_us_time
+
+        local start_time = time()
+        return function()
+            if time() - start_time > max_time then
+                debug.sethook()
+                error(
+                    "Code timed out! Reason: Time limit exceeded, the limit:" ..
+                    tostring(max_time / 1000) .. "ms, the program took:" .. ((time() - start_time) / 1000), 2)
+            end
+        end
+    end
+end
+
 function api.run_sandbox(ID, value_passed)
     local sandbox = active_sandboxes[ID]
     if sandbox == nil then
@@ -250,14 +266,15 @@ function api.run_sandbox(ID, value_passed)
     local ok, errmsg_or_value
 
     local pcall_ok, pcall_errmsg = pcall(function()
-        debug.sethook(thread, sandbox.in_hook, "", sandbox.hook_time or 50)
+        debug.sethook(sandbox.in_hook(), "", sandbox.hook_time or 50)
         getmetatable("").__index = sandbox.env.string
         ok, errmsg_or_value = coroutine.resume(thread, value_passed)
     end)
     -- in rare cases this is actually nessesary,
     -- in all other cases coroutine.resume works perfectly fine to catch the error
     -- actually i dont really know if its that nessesary...
-    debug.sethook(thread)
+    debug.sethook()
+    minetest.log("Our hook: " .. dump(debug.gethook()))
     getmetatable("").__index = string
 
     local size_check = api.size_check(sandbox.env, sandbox.size_limit, thread)

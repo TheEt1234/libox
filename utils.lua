@@ -5,7 +5,9 @@ function libox.get_default_hook(max_time)
     return function()
         if time() - start_time > max_time then
             debug.sethook()
-            error("Code timed out! Reason: Time limit exceeded, the limit:" .. tostring(max_time / 1000) .. "ms", 2)
+            error(
+                "Code timed out! Reason: Time limit exceeded, the limit:" ..
+                tostring(max_time / 1000) .. "ms, the program took:" .. ((time() - start_time) / 1000), 2)
         end
     end
 end
@@ -190,6 +192,7 @@ function libox.sandbox_lib_f(f, opt_str_limit)
 
         ]]
     return function(...)
+        local t0 = minetest.get_us_time()
         local args = { ... }
         for _, v in pairs(args) do
             if type(v) == "string" and #v > (opt_str_limit or 64000) then error("String too large", 2) end
