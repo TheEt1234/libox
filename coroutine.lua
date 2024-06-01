@@ -274,7 +274,6 @@ function api.run_sandbox(ID, value_passed)
     -- in all other cases coroutine.resume works perfectly fine to catch the error
     -- actually i dont really know if its that nessesary...
     debug.sethook()
-    minetest.log("Our hook: " .. dump(debug.gethook()))
     getmetatable("").__index = string
 
     local size_check = api.size_check(sandbox.env, sandbox.size_limit, thread)
