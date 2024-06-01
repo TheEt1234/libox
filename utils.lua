@@ -192,7 +192,6 @@ function libox.sandbox_lib_f(f, opt_str_limit)
 
         ]]
     return function(...)
-        local t0 = minetest.get_us_time()
         local args = { ... }
         for _, v in pairs(args) do
             if type(v) == "string" and #v > (opt_str_limit or 64000) then error("String too large", 2) end
