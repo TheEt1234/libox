@@ -250,7 +250,7 @@ function api.run_sandbox(ID, value_passed)
     local ok, errmsg_or_value
 
     local pcall_ok, pcall_errmsg = pcall(function()
-        debug.sethook(thread, sandbox.in_hook(), "", sandbox.hook_time or 50)
+        debug.sethook(thread, sandbox.in_hook, "", sandbox.hook_time or 50)
         getmetatable("").__index = sandbox.env.string
         ok, errmsg_or_value = coroutine.resume(thread, value_passed)
     end)
