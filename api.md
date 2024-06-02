@@ -50,7 +50,7 @@
 ## Environment
 `libox.create_basic_environment()` - get a basic secure environment already set up for you
 
-`supply_additional_environment(env)` - a function that lets other mods extend the environment, gets called after environment creation, by default is `function(...) return ... end`
+`libox.supply_additional_environment(env)` - a function that lets other mods extend the environment, gets called after environment creation, by default is `function(...) return ... end`
 
 `libox.safe.*` - safe functions/classes, used in libox.create_basic_environment, used internally, you shouldn't modify this table
 
