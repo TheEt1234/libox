@@ -1,4 +1,4 @@
-libox.test.describe("Normal sandbox (tests the environment)", function(it)
+libox.test.describe("Normal sandbox (tests the environment, mostly)", function(it)
     it("Doesn't do bytecode", function(assert)
         -- mod security prevents it anyway
         assert(not libox.normal_sandbox({
@@ -30,7 +30,7 @@ libox.test.describe("Normal sandbox (tests the environment)", function(it)
     end)
     it("Isn't vurnable to severe trollery", function(_, _, bad, custom)
         local t1 = minetest.get_us_time()
-        local ok = libox.normal_sandbox({
+        local ok, err = libox.normal_sandbox({
             code = [[
                 local x = "."
                 repeat
@@ -40,13 +40,11 @@ libox.test.describe("Normal sandbox (tests the environment)", function(it)
             env = {},
             max_time = 10000, -- 10 milis for this
         })
-        -- normal luac sandbox would kill itself
-        -- try it
         local t2 = minetest.get_us_time()
         if ok then
             bad()
         else
-            custom("took " .. (t2 - t1) .. "us, sandbox was given 10 000 us")
+            custom("took " .. (t2 - t1) .. "us, sandbox was given 10 000 us, for debug: the error was: " .. dump(err))
         end
     end)
     it("Can loadstring", function(assert)
@@ -73,7 +71,7 @@ libox.test.describe("Normal sandbox (tests the environment)", function(it)
             max_time = 1000,
         }))
     end)
-    it("Can handle shenanigans", function(_, _, bad, custom)
+    it("Can handle weird recursive shenanigans (that mostly exploit traceback)", function(_, _, bad, custom)
         --[[
             This attempts to abuse libox.traceback to create a gigantic
             error message and force several executions of debug.getinfo
@@ -106,7 +104,7 @@ libox.test.describe("Normal sandbox (tests the environment)", function(it)
             max_time = 10000,
         }))
     end)
-    it("Can handle some basic shenanigans", function(assert)
+    it("Can limit string length on functions that probably need it", function(assert)
         assert(not libox.normal_sandbox({
             code = [[
                 local str = string.rep(":",64000)
@@ -170,7 +168,7 @@ libox.test.describe("Normal sandbox (tests the environment)", function(it)
 
         assert(result1 and result2 and result3 and result4 and result5 and result6)
     end)
-    it("Can check types (advanced)", function(assert)
+    it("Can check types (recursive)", function(assert)
         local table = {
             f = function() end
         }
@@ -183,8 +181,8 @@ libox.test.describe("Normal sandbox (tests the environment)", function(it)
         }))
     end)
 
-    it("Can do userdata securely - PerlinNoise", function(assert)
-        local perlin = libox.sandbox_lib_f(libox.safe.PerlinNoise)
+    it("Userdata propertly type checked - PerlinNoise", function(assert)
+        local perlin = libox.safe.PerlinNoise
         debug.sethook(function() end, "", 1000) -- make it so sandbox_lib_f wont get mad
         local result1 = perlin({
             offset = 0,

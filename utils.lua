@@ -92,6 +92,12 @@ function libox.traceback(errmsg)
     return libox.shorten_path(errmsg) .. "\n" .. traceback
 end
 
+function libox.unsafe_traceback(errmsg)
+    debug.sethook()
+    getmetatable("").__index = string
+    return libox.traceback(errmsg)
+end
+
 function libox.digiline_sanitize(input, allow_functions, wrap)
     --[[
 		Parameters:

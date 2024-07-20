@@ -262,7 +262,7 @@ until false
         libox.coroutine.settings = original_settings
 
         response = response ..
-            "number of sandboxes after collection (it should remain high because the chance is random): " ..
+            "number of sandboxes after collection (it should remain high because their 'state' is random): " ..
             dumbcount(active) .. "\n"
 
 

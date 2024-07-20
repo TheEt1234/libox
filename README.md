@@ -13,12 +13,12 @@ See [env_docs.md](https://github.com/TheEt1234/libox/blob/master/env_docs.md) fo
 Libox (optionally) requires insecure environment to weigh local variables and upvalues in the coroutine sandbox. **Without this someone can overfill your memory with local variables/upvalues**  
 ***the libox mod will expose debug.getlocal and debug.getupvalue to all mods***
 
-Also if you are using coroutine sandboxes, PUC lua may not work well inside them due to PUC/JIT differences like resumability
+Also if you are using coroutine sandboxes, please use luaJIT (default) instead of PUC lua, as there are a lot of differences between them
 
 # Security
 
-- Fixes mesecons issue #516 by limiting based on time not instructions
-- May introduce new bugs, only time can test that
+- *Somewhat* fixes mesecons issue #516 by limiting based on time not instructions
+- ***May introduce new bugs, only time can test that***
 - Some of the responsibility is also on the mods that use libox as well (such as not doing something dumb like calling functions straight from the environment), the purpose of libox should be to also handle some of the more common stuff 
 
 # Optional dependancies

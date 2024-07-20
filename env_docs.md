@@ -62,7 +62,7 @@
 - Copied, unchanged
 
 # Vector library (vector.*)
-- Copied, removed `metatable`
+- Copied, removed `vector.metatable`
 
 # os library (os.*)
 

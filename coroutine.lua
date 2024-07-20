@@ -60,8 +60,8 @@ function api.create_sandbox(def)
         in_hook = def.in_hook or libox.coroutine.get_default_hook(def.time_limit or 3000),
         function_wrap = def.function_wrap or function(f) return f end,
         last_ran = os.clock(),                         -- for gc and logging
-        hook_time = def.hook_time or 50,
-        size_limit = def.size_limit or 1024 * 1024 * 5 -- 5 megabytes... wow
+        hook_time = def.hook_time or libox.default_hook_time,
+        size_limit = def.size_limit or 1024 * 1024 * 5 -- 5 megabytes
     }
     return ID
 end
@@ -70,6 +70,7 @@ function api.create_thread(sandbox)
     -- prohibited by mod security anyway, basically bytecode is fancy stuff that allows rce and we dont want that
     if sandbox.code:byte(1) == 27 then
         return false, "Bytecode was not allowed."
+        -- *mod security would prevent it anyway* but just in case someone turned that off
     end
 
     local f, msg = loadstring(sandbox.code)
@@ -100,7 +101,7 @@ end
 
 function api.locals(val, f_thread)
     local ret = {
-        _F = "", -- the function itself, weighed using string.dump, if thread this is ignored
+        _F = "", -- the function itself, weighed and put using string.dump, if thread this is ignored
         _L = {}, -- Locals
         _U = {}  -- Upvalues
     }
@@ -266,7 +267,7 @@ function api.run_sandbox(ID, value_passed)
     local ok, errmsg_or_value
 
     local pcall_ok, pcall_errmsg = pcall(function()
-        debug.sethook(sandbox.in_hook(), "", sandbox.hook_time or 50)
+        debug.sethook(sandbox.in_hook(), "", sandbox.hook_time or libox.default_hook_time)
         getmetatable("").__index = sandbox.env.string
         ok, errmsg_or_value = coroutine.resume(thread, value_passed)
     end)

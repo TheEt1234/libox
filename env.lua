@@ -11,7 +11,7 @@ end
 
 function libox.safe.rep(str, n)
     if #str * n > 64000 then
-        error("no its not that easy", 2)
+        error("string length overflow", 2)
     end
     return string.rep(str, n)
 end
@@ -45,7 +45,7 @@ function libox.safe.PerlinNoise(noiseparams)
         seed = libox.type("number"),
         octaves = libox.type("number"),
         persistence = libox.type("number"),
-        lacunaristy = libox.type("number"),
+        lacunarity = libox.type("number"),
         flags = function(x)
             if x ~= nil then
                 return type(x) == "string"
@@ -53,8 +53,8 @@ function libox.safe.PerlinNoise(noiseparams)
                 return true
             end
         end,
-
     })
+
     if not check then
         return false, element
     end
@@ -151,10 +151,11 @@ function libox.create_basic_environment()
     --[[
         get the safest, least strict lua environment
         *for the "normal" sandbox, when using the "coroutine" sandbox you will need to add coroutine.yield
+        and edit pcall/xpcall to run coroutine.yield instead of erroring
 
     ]]
 
-    -- INCLUDES: basic lib (minus coroutine, add that yourself if you need to), string, table, math, bit, os
+    -- INCLUDES: basic lib (minus coroutine, add that yourself if you need to), string, table, math, bit, os, a bit of minetest, some minetest classes
     -- is meant to be added on top of
     local env = {
         assert = assert,
@@ -186,7 +187,12 @@ function libox.create_basic_environment()
         byte = string.byte,
         char = string.char,
         dump = string.dump,
-        find = function(s, pattern, init)
+        find = function(s, pattern, init, plain)
+            if not plain then
+                error(
+                    "string.find: the fourth parameter (plain) must be true, if you need patterns, use pat.find instead",
+                    2)
+            end
             return string.find(s, pattern, init, true)
         end,
         format = string.format,
@@ -200,7 +206,7 @@ function libox.create_basic_environment()
         trim = string.trim,
         split = function(str, delim, include_empty, max_splits, sep_is_pattern)
             if sep_is_pattern == true then
-                error("No the seperator won't be a pattern", 2)
+                error("The fourth argument (sep_is_pattern) must be false", 2)
             end
             return string.split(str, delim, include_empty, max_splits, false)
         end,
@@ -217,11 +223,10 @@ function libox.create_basic_environment()
         insert_all = table.insert_all,
         key_value_swap = table.key_value_swap,
         shuffle = table.shuffle,
-        -- luajit helpers
-        move = table.move,
 
-        -- deperecated stuff lol, i wonder...
-        -- is it deplicated in luajit or just lua....
+        -- luajit only helpers
+        move = table.move,
+        -- deprecated stuff
         foreach = table.foreach,
         foreachi = table.foreachi,
     }
@@ -242,8 +247,7 @@ function libox.create_basic_environment()
     env.bit = table.copy(bit)
 
     env.vector = table.copy(vector)
-    env.vector.metatable = nil
-
+    env.vector.metatable = nil -- it's useless to add it, and it's undocumented
     env.os = {
         clock = os.clock,
         datetable = datetable,
