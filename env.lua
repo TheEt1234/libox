@@ -274,7 +274,7 @@ function libox.create_basic_environment()
     for _, v in ipairs({
         "dump", "dump2"
     }) do
-        env[v] = _G[v]
+        env[v] = libox.sandbox_lib_f(_G[v])
     end
 
     -- oh yeah who could forget...
