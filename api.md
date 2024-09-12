@@ -111,7 +111,7 @@ All of theese are configurable by the user
 
 `libox.coroutine.run_sandbox(ID, value_passed)`
 - `value_passed` - the value passed to the coroutine.resume function, so that in the sandbox it could: `local vals = coroutine.yield("blabla")`
-- Returns ok, errmsg
+- Returns ok, errmsg_or_value (the `"blabla"` in `coroutine.yield("blabla")`)
 
 `libox.coroutine.size_check(env, lim, thread)`
 - `env` - environment of the thread
