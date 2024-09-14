@@ -92,6 +92,7 @@ function libox.traceback(errmsg)
     return libox.shorten_path(errmsg) .. "\n" .. traceback
 end
 
+-- dont rely on this to sethook and
 function libox.unsafe_traceback(errmsg)
     debug.sethook()
     getmetatable("").__index = string

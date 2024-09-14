@@ -217,6 +217,7 @@ function libox.create_basic_environment()
         maxn = table.maxn,
         remove = table.remove,
         sort = table.sort,
+        concat = table.concat,
         -- minetest helpers:
         indexof = table.indexof,
         copy = table.copy,
