@@ -258,6 +258,8 @@ function libox.create_basic_environment()
     }
 
     env.minetest = {
+        hash_node_position = minetest.hash_node_position,
+        get_position_from_hash = minetest.get_position_from_hash,
         formspec_escape = libox.sandbox_lib_f(minetest.formspec_escape),
         explode_table_event = libox.sandbox_lib_f(minetest.explode_table_event),
         explode_textlist_event = libox.sandbox_lib_f(minetest.explode_textlist_event),
