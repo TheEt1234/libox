@@ -46,9 +46,8 @@
 - insert_all = unchanged, from minetest
 - key_value_swap = unchanged, from minetest
 - shuffle = unchanged, from minetest
-- move = unchanged
-- foreach = unchanged, deprecated in lua
-- foreachi = unchanged, deprecated in lua
+- move = unchanged, LUAJIT ONLY
+- concat = unchanged
 
 # Math library (math.*)
 
