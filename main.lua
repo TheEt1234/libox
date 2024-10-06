@@ -2,7 +2,7 @@ libox = {
     safe = {},
     supply_additional_environment = function(...) return ... end, -- for other mods
     default_hook_time = 20,
-    disabled = {}
+    disabled = false
 }
 
 
