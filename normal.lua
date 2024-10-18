@@ -35,10 +35,10 @@ function libox.normal_sandbox(def)
         debug.sethook() -- fix a potential bug where someone can trigger a debug hook at just the right time for luanti to crash
         return error_handler(...)
     end)
+    debug.sethook()
+    getmetatable("").__index = string
     debug.sethook(unpack(old_hook))
 
-
-    getmetatable("").__index = string
     if not ok then
         return false, ret
     else
