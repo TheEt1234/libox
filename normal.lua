@@ -27,7 +27,7 @@ function libox.normal_sandbox(def)
 
     f = function_wrap(f)
 
-    local old_hook = { debug.gethook() }
+    --local old_hook = { debug.gethook() }
 
     debug.sethook(in_hook, "", def.hook_time or libox.default_hook_time)
     getmetatable("").__index = env.string
@@ -37,7 +37,7 @@ function libox.normal_sandbox(def)
     end)
     debug.sethook()
     getmetatable("").__index = string
-    debug.sethook(unpack(old_hook))
+    debug.sethook( --[[unpack(old_hook)--]])
 
     if not ok then
         return false, ret
