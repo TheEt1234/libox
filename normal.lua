@@ -42,6 +42,7 @@ function libox.normal_sandbox(def)
         getmetatable("").__index = string
     end)
     debug.sethook()
+    getmetatable("").__index = string -- OK HOPEFULLY FIX THAT BUG
     if not ok then
         return false, ret
     else
