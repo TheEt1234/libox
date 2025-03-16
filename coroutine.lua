@@ -230,7 +230,7 @@ function api.size_check(env, lim, thread)
     return size < lim
 end
 
-function api.get_default_hook(max_time) -- im sorry
+function api.get_default_hook(max_time)
     return function()
         local time = minetest.get_us_time
 
@@ -238,8 +238,7 @@ function api.get_default_hook(max_time) -- im sorry
         return function()
             if time() - start_time > max_time then
                 debug.sethook()
-                error(
-                    "Code timed out! Reason: Time limit exceeded, the limit:" ..
+                error("Code timed out! Reason: Time limit exceeded, the limit:" ..
                     tostring(max_time / 1000) .. "ms, the program took:" .. ((time() - start_time) / 1000), 2)
             end
         end
@@ -270,20 +269,26 @@ function api.run_sandbox(ID, value_passed)
         return false, "The coroutine is dead, nothing to do."
     end
 
-    local old_hook = { debug.gethook() }
 
     local ok, errmsg_or_value
-
-    local pcall_ok, pcall_errmsg = pcall(function()
-        debug.sethook(sandbox.in_hook(), "", sandbox.hook_time or libox.default_hook_time)
-        getmetatable("").__index = sandbox.env.string
-        ok, errmsg_or_value = coroutine.resume(thread, value_passed)
+    local pcall_ok, pcall_errmsg
+    -- "nested pcall just in case" i knowww its bad and it sounds bad but yeah
+    local something_gone_horribly_wrong = pcall(function()
+        pcall_ok, pcall_errmsg = pcall(function()
+            debug.sethook(sandbox.in_hook(), "", sandbox.hook_time or libox.default_hook_time)
+            getmetatable("").__index = sandbox.env.string
+            ok, errmsg_or_value = coroutine.resume(thread, value_passed)
+            debug.sethook()
+        end)
+        debug.sethook()
+        getmetatable("").__index = string
     end)
-    -- in rare cases this is actually nessesary,
-    -- in all other cases coroutine.resume works perfectly fine to catch the error
-    -- actually i dont really know if its that nessesary...
-    debug.sethook(unpack(old_hook))
+    debug.sethook()
     getmetatable("").__index = string
+
+    if something_gone_horribly_wrong then
+        return false, "Strange bug happened, but yes - the sandbox timed out."
+    end
 
     local size_check = api.size_check(sandbox.env, sandbox.size_limit, thread)
     if not size_check then return false, "Out of memory!" end
