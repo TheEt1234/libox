@@ -8,6 +8,18 @@ See [api.md](https://github.com/TheEt1234/libox/blob/master/api.md) for document
 
 See [env_docs.md](https://github.com/TheEt1234/libox/blob/master/env_docs.md) for documentation of the sandbox environment
 
+# UPDATE: This may not be the best aproach to sandboxing
+There is theoretically a WAY better to sandbox, that as of this writing (2025-10-03) has not been tried yet:
+
+A library could parse lua code and automatically insert `coroutine.yield()` statements into it, and sandboxed code should be ran exclusively in another thread if possible.
+
+This has a lot of benefits:
+- no need for debug hooks if implemented correctly
+    - Can JIT compile sandboxed code
+    - Can get rid of the messy code around debug hooks
+    - Code coverage can easier co-exist with this mod
+- Has the same effect as autohook, without the incredibly messy stuff
+
 # Notice!
 
 Libox (optionally) requires insecure environment to weigh local variables and upvalues in the coroutine sandbox. **Without this someone can overfill your memory with local variables/upvalues**\
