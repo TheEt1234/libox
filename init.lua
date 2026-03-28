@@ -1,6 +1,6 @@
 local ie = minetest.request_insecure_environment()
 if ie == nil and (debug.getupvalue == nil and debug.getlocal == nil) then
-	minetest.log(
+	core.log(
 		"warning",
 		[[
 ====Hello, this message is for server owners====
@@ -83,7 +83,7 @@ else
 	core.log("info", "[libox] Autohook feature NOT available")
 end
 
-local MP = minetest.get_modpath(minetest.get_current_modname())
+local MP = core.get_modpath(core.get_current_modname())
 dofile(MP .. "/main.lua")
 
 -- Files that are executed sync only, coroutine.lua and *.test.lua
@@ -92,7 +92,7 @@ dofile(MP .. "/coroutine.lua")
 libox_autohook_module = nil
 
 -- async files
-minetest.register_async_dofile(MP .. "/main.lua")
+core.register_async_dofile(MP .. "/main.lua")
 
 local test = MP .. "/test"
 dofile(test .. "/basic_testing.lua")
