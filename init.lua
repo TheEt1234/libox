@@ -7,7 +7,7 @@ if ie == nil and (debug.getupvalue == nil and debug.getlocal == nil) then
 Libox needs to be a trusted mod for weighing of coroutine sandboxes to work properly.
 If it isn't, coroutine sandboxes could fill up your server's memory with local variables and upvalues.
 
-Libox can re-use debug.getlocal and debug.getupvalue if it is already avaliable in the environment
+Libox can re-use debug.getlocal and debug.getupvalue if it is already available in the environment
 When adding libox to secure.trusted_mods, be aware that it will expose debug.getlocal and debug.getupvalue
 ================================================
 ]]
@@ -26,7 +26,7 @@ if ie and jit then
 	else -- Linux/Unix-like
 		lib = MP .. "/autohook/libautohook.so"
 	end
-	-- Use package.loadlib() instad of require() to prevent using
+	-- Use package.loadlib() instead of require() to prevent using
 	-- system/other apps' libraries with the same name
 	local load_func = ie.package.loadlib(lib, "luaopen_autohook")
 	if load_func then
