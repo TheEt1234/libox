@@ -1,3 +1,4 @@
+libox_autohook_module = rawget(_G, "libox_autohook_module") or nil
 libox = {
     safe = {},
     supply_additional_environment = function(...) return ... end, -- for other mods to do their stuff

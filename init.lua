@@ -1,7 +1,7 @@
 ---@diagnostic disable: lowercase-global
 ---@diagnostic disable: undefined-global
+libox_autohook_module = rawget(_G, "libox_autohook_module") or nil
 local ie = core.request_insecure_environment()
-libox_autohook_module = nil
 if ie == nil and (debug.getupvalue == nil and debug.getlocal == nil) then
 	core.log(
 		"warning",
