@@ -6,14 +6,13 @@ if ie == nil and (debug.getupvalue == nil and debug.getlocal == nil) then
 	core.log(
 		"warning",
 		[[
+
 ====Hello, this message is for server owners====
 Libox needs to be a trusted mod for weighing of coroutine sandboxes to work properly.
 If it isn't, coroutine sandboxes could fill up your server's memory with local variables and upvalues.
-
 Libox can re-use debug.getlocal and debug.getupvalue if it is already available in the environment
 When adding libox to secure.trusted_mods, be aware that it will expose debug.getlocal and debug.getupvalue
-================================================
-]]
+================================================]]
 	)
 elseif debug.getlocal == nil or debug.getupvalue == nil and ie ~= nil then
 	-- luacheck:ignore
