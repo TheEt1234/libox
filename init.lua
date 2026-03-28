@@ -1,4 +1,7 @@
-local ie = minetest.request_insecure_environment()
+---@diagnostic disable: lowercase-global
+---@diagnostic disable: undefined-global
+local ie = core.request_insecure_environment()
+libox_autohook_module = nil
 if ie == nil and (debug.getupvalue == nil and debug.getlocal == nil) then
 	core.log(
 		"warning",
