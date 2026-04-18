@@ -1,3 +1,10 @@
+# **Deprecation notice!**
+
+I don't want to maintain this project anymore, this project does not have good ways of doing sandboxing (erroring when the sandbox used too much time makes it pretty much unusable) and i feel it has too many features that complicate things.  
+I wrote this code two years ago and i hate it.
+
+Only security issues will be fixed.
+
 # Libox
 
 A minetest sandboxing library, offering a basic environment, utilities, normal sandbox and a "coroutine" sandbox
