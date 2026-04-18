@@ -82,6 +82,7 @@ function libox.safe.xpcall(f, handler, ...)
 	local string_mt = getmetatable("").__index
 	local ret_values = {
 		xpcall(f, function(...)
+			getmetatable("").__index = string_mt
 			if not debug.gethook() then
 				error("Code timed out!", 2)
 				return
