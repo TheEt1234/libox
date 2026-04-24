@@ -1,16 +1,18 @@
-local ie = minetest.request_insecure_environment()
+---@diagnostic disable: lowercase-global
+---@diagnostic disable: undefined-global
+libox_autohook_module = rawget(_G, "libox_autohook_module") or nil
+local ie = core.request_insecure_environment()
 if ie == nil and (debug.getupvalue == nil and debug.getlocal == nil) then
-	minetest.log(
+	core.log(
 		"warning",
 		[[
+
 ====Hello, this message is for server owners====
 Libox needs to be a trusted mod for weighing of coroutine sandboxes to work properly.
 If it isn't, coroutine sandboxes could fill up your server's memory with local variables and upvalues.
-
-Libox can re-use debug.getlocal and debug.getupvalue if it is already avaliable in the environment
+Libox can re-use debug.getlocal and debug.getupvalue if it is already available in the environment
 When adding libox to secure.trusted_mods, be aware that it will expose debug.getlocal and debug.getupvalue
-================================================
-]]
+================================================]]
 	)
 elseif debug.getlocal == nil or debug.getupvalue == nil and ie ~= nil then
 	-- luacheck:ignore
@@ -26,7 +28,7 @@ if ie and jit then
 	else -- Linux/Unix-like
 		lib = MP .. "/autohook/libautohook.so"
 	end
-	-- Use package.loadlib() instad of require() to prevent using
+	-- Use package.loadlib() instead of require() to prevent using
 	-- system/other apps' libraries with the same name
 	local load_func = ie.package.loadlib(lib, "luaopen_autohook")
 	if load_func then
@@ -83,7 +85,7 @@ else
 	core.log("info", "[libox] Autohook feature NOT available")
 end
 
-local MP = minetest.get_modpath(minetest.get_current_modname())
+local MP = core.get_modpath(core.get_current_modname())
 dofile(MP .. "/main.lua")
 
 -- Files that are executed sync only, coroutine.lua and *.test.lua
@@ -92,7 +94,7 @@ dofile(MP .. "/coroutine.lua")
 libox_autohook_module = nil
 
 -- async files
-minetest.register_async_dofile(MP .. "/main.lua")
+core.register_async_dofile(MP .. "/main.lua")
 
 local test = MP .. "/test"
 dofile(test .. "/basic_testing.lua")
